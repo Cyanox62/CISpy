@@ -1,6 +1,4 @@
-﻿using System;
-using Smod2;
-using Smod2.Commands;
+﻿using Smod2.Commands;
 using Smod2.API;
 
 namespace CISpy
@@ -29,7 +27,6 @@ namespace CISpy
 
 				Plugin.MakeSpy(player);
 
-				PluginManager.Manager.Logger.Info(Plugin.instance.Details.id, player.Name + " has become a spy.");
 				return new string[] { player.Name + " has been made a spy." };
 			}
 			else

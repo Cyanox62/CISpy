@@ -1,15 +1,9 @@
-﻿using System;
-using Smod2;
+﻿using Smod2;
 using Smod2.API;
-using Smod2.EventHandlers;
-using Smod2.Events;
-using Smod2.EventSystem.Events;
 using System.Collections.Generic;
-using System.Threading;
 using System.Linq;
 using UnityEngine;
 using scp4aiur;
-using Object = UnityEngine.Object;
 
 namespace CISpy
 {

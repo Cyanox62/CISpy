@@ -30,7 +30,7 @@ namespace CISpy
 
 		public static Dictionary<string, Role> RoleDict = new Dictionary<string, Role>();
 
-		public static System.Random rand = new System.Random();
+		public static Random rand = new Random();
 
 		public override void OnEnable() { }
 
@@ -43,11 +43,17 @@ namespace CISpy
 			Timing.Init(this);
 
 			AddEventHandlers(new EventHandler());
+
 			AddCommands(new string[] { "sc", "spycup" }, new CommandHandler());
+
 			AddConfig(new Smod2.Config.ConfigSetting("cis_enabled", true, Smod2.Config.SettingType.BOOL, true, "Enables CiSpy."));
 			AddConfig(new Smod2.Config.ConfigSetting("cis_cooldown", 10f, Smod2.Config.SettingType.FLOAT, true, "Determines the cooldown from switching classes."));
 			AddConfig(new Smod2.Config.ConfigSetting("cis_guard_chance", 50, Smod2.Config.SettingType.NUMERIC, true, "The chance for a facility guard to spawn as a spy at the start of the round."));
-			AddConfig(new Smod2.Config.ConfigSetting("cis_spy_roles", new[] { 11, 13 }, Smod2.Config.SettingType.NUMERIC_LIST, true, "Which roles can be a spy."));
+			AddConfig(new Smod2.Config.ConfigSetting("cis_spy_roles", new[] 
+			{
+				11,
+				13
+			}, Smod2.Config.SettingType.NUMERIC_LIST, true, "Which roles can be a spy."));
 		}
 
 		public static int LevenshteinDistance(string s, string t)

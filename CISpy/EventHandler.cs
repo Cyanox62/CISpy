@@ -1,13 +1,10 @@
-﻿using System;
-using Smod2;
+﻿using Smod2;
 using Smod2.API;
 using Smod2.EventHandlers;
 using Smod2.Events;
 using Smod2.EventSystem.Events;
 using System.Collections.Generic;
-using System.Threading;
 using System.Linq;
-using Object = UnityEngine.Object;
 using scp4aiur;
 
 namespace CISpy
@@ -25,19 +22,14 @@ namespace CISpy
 			if (Plugin.isEnabled)
 			{
 				Plugin.RoleDict.Clear();
-
-				int guardChance = Plugin.rand.Next(1, 101);
-				if (guardChance <= Plugin.guardChance)
+				if (Plugin.rand.Next(1, 101) <= Plugin.guardChance)
 				{
 					List<Player> Guards = new List<Player>();
 					foreach (Player player in PluginManager.Manager.Server.GetPlayers().Where(x => x.TeamRole.Role == Role.FACILITY_GUARD))
 						Guards.Add(player);
 
 					if (Guards.Count > 0)
-					{
-						Player guardSpy = Guards[Plugin.rand.Next(Guards.Count)];
-						Plugin.MakeSpy(guardSpy, 15);
-					}
+						Plugin.MakeSpy(Guards[Plugin.rand.Next(Guards.Count)], 15);
 				}
 			}
 		}
@@ -48,8 +40,7 @@ namespace CISpy
 			{
 				Timing.Next(() =>
 				{
-					Player player = ev.PlayerList[Plugin.rand.Next(ev.PlayerList.Count)];
-					Plugin.MakeSpy(player);
+					Plugin.MakeSpy(ev.PlayerList[Plugin.rand.Next(ev.PlayerList.Count)]);
 				});
 			}
 		}
@@ -69,27 +60,26 @@ namespace CISpy
 			if (Plugin.isEnabled)
 			{
 				if (ev.Player.TeamRole.Role.Equals(Role.UNASSIGNED)) return;
-				if (Plugin.RoleDict.ContainsKey(ev.Player.SteamId)) Plugin.RoleDict.Remove(ev.Player.SteamId);
+				if (Plugin.RoleDict.ContainsKey(ev.Player.SteamId))
+					Plugin.RoleDict.Remove(ev.Player.SteamId);
 			}
 		}
 
 		public void OnPlayerHurt(PlayerHurtEvent ev)
 		{
-			if (Plugin.isEnabled)
+			if (Plugin.isEnabled && ev.DamageType != DamageType.POCKET)
 			{
 				if (ev.Player.SteamId == ev.Attacker.SteamId) return;
 				if (ev.Attacker.TeamRole.Team == Smod2.API.Team.CHAOS_INSURGENCY ||
 					ev.Attacker.TeamRole.Team == Smod2.API.Team.CLASSD &&
-					Plugin.RoleDict.ContainsKey(ev.Player.SteamId) &&
-					ev.DamageType != DamageType.POCKET)
+					Plugin.RoleDict.ContainsKey(ev.Player.SteamId))
 				{
 					ev.Damage = 0;
 				}
 
 				if (Plugin.RoleDict.ContainsKey(ev.Attacker.SteamId) &&
 					ev.Player.TeamRole.Team == Smod2.API.Team.CLASSD ||
-					ev.Player.TeamRole.Team == Smod2.API.Team.CHAOS_INSURGENCY &&
-					ev.DamageType != DamageType.POCKET)
+					ev.Player.TeamRole.Team == Smod2.API.Team.CHAOS_INSURGENCY)
 				{
 					ev.Damage = 0;
 				}
@@ -99,10 +89,7 @@ namespace CISpy
 
 		public void OnPlayerDropItem(PlayerDropItemEvent ev)
 		{
-			if (Plugin.isEnabled && ev.Item.ItemType == ItemType.CUP)
-			{
-				ChangeSpyRole(ev.Player);
-			}
+			if (Plugin.isEnabled && ev.Item.ItemType == ItemType.CUP) ChangeSpyRole(ev.Player);
 		}
 	}
 }
