@@ -44,7 +44,7 @@ namespace CISpy
 
 			AddEventHandlers(new EventHandler());
 
-			AddCommands(new string[] { "sc", "spycup" }, new CommandHandler());
+			AddCommands(new string[] { "cis", "cispy" }, new CommandHandler());
 
 			AddConfig(new Smod2.Config.ConfigSetting("cis_enabled", true, Smod2.Config.SettingType.BOOL, true, "Enables CiSpy."));
 			AddConfig(new Smod2.Config.ConfigSetting("cis_cooldown", 10f, Smod2.Config.SettingType.FLOAT, true, "Determines the cooldown from switching classes."));
