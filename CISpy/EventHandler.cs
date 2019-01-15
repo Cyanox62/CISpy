@@ -10,7 +10,7 @@ using scp4aiur;
 namespace CISpy
 {
 	partial class EventHandler : IEventHandlerWaitingForPlayers, IEventHandlerRoundStart, IEventHandlerTeamRespawn, IEventHandlerSetRole,
-		IEventHandlerPlayerDie, IEventHandlerPlayerHurt, IEventHandlerPlayerDropItem
+		IEventHandlerPlayerDie, IEventHandlerPlayerHurt
 	{
 		public void OnWaitingForPlayers(WaitingForPlayersEvent ev)
 		{
@@ -21,7 +21,7 @@ namespace CISpy
 		{
 			if (Plugin.isEnabled)
 			{
-				Plugin.RoleDict.Clear();
+				Plugin.SpyDict.Clear();
 				if (Plugin.rand.Next(1, 101) <= Plugin.guardChance)
 				{
 					List<Player> Guards = new List<Player>();
@@ -50,8 +50,8 @@ namespace CISpy
 			if (Plugin.isEnabled)
 			{
 				if (ev.Player.TeamRole.Role.Equals(Role.UNASSIGNED)) return;
-				if (Plugin.RoleDict.ContainsKey(ev.Player.SteamId) && ev.Player.TeamRole.Team != Smod2.API.Team.NINETAILFOX && ev.Player.TeamRole.Team != Smod2.API.Team.CHAOS_INSURGENCY)
-					Plugin.RoleDict.Remove(ev.Player.SteamId);
+				if (Plugin.SpyDict.ContainsKey(ev.Player.SteamId) && ev.Player.TeamRole.Team != Smod2.API.Team.NINETAILFOX && ev.Player.TeamRole.Team != Smod2.API.Team.CHAOS_INSURGENCY)
+					Plugin.SpyDict.Remove(ev.Player.SteamId);
 			}
 		}
 
@@ -60,8 +60,23 @@ namespace CISpy
 			if (Plugin.isEnabled)
 			{
 				if (ev.Player.TeamRole.Role.Equals(Role.UNASSIGNED)) return;
-				if (Plugin.RoleDict.ContainsKey(ev.Player.SteamId))
-					Plugin.RoleDict.Remove(ev.Player.SteamId);
+				if (Plugin.SpyDict.ContainsKey(ev.Player.SteamId))
+					Plugin.SpyDict.Remove(ev.Player.SteamId);
+
+				int MTFAliveCount = CountRoles(Smod2.API.Team.NINETAILFOX);
+				bool CiAlive = CountRoles(Smod2.API.Team.CHAOS_INSURGENCY) > 0;
+				bool ScpAlive = CountRoles(Smod2.API.Team.SCP) > 0;
+				bool DClassAlive = CountRoles(Smod2.API.Team.CLASSD) > 0;
+				bool ScientistsAlive = CountRoles(Smod2.API.Team.SCIENTIST) > 0;
+				foreach (Player player in PluginManager.Manager.Server.GetPlayers().Where(x => x.TeamRole.Team == Smod2.API.Team.NINETAILFOX && Plugin.SpyDict.ContainsKey(x.SteamId))) MTFAliveCount--;
+				bool MTFAlive = MTFAliveCount > 0;
+
+				if ((CiAlive || (CiAlive && ScpAlive) || (CiAlive && DClassAlive)) && !ScientistsAlive && !MTFAlive)
+					Plugin.RevealSpies();
+				if ((ScpAlive || DClassAlive) && !ScientistsAlive && !MTFAlive)
+					Plugin.RevealSpies();
+				if ((ScientistsAlive || MTFAlive || (ScientistsAlive && MTFAlive)) && !CiAlive && !ScpAlive && !DClassAlive)
+					Plugin.RevealSpies();
 			}
 		}
 
@@ -70,26 +85,38 @@ namespace CISpy
 			if (Plugin.isEnabled && ev.DamageType != DamageType.POCKET)
 			{
 				if (ev.Player.SteamId == ev.Attacker.SteamId) return;
-				if (ev.Attacker.TeamRole.Team == Smod2.API.Team.CHAOS_INSURGENCY ||
-					ev.Attacker.TeamRole.Team == Smod2.API.Team.CLASSD &&
-					Plugin.RoleDict.ContainsKey(ev.Player.SteamId))
+				if ((ev.Attacker.TeamRole.Team == Smod2.API.Team.CHAOS_INSURGENCY ||
+					ev.Attacker.TeamRole.Team == Smod2.API.Team.CLASSD) &&
+					Plugin.SpyDict.ContainsKey(ev.Player.SteamId))
 				{
 					ev.Damage = 0;
 				}
 
-				if (Plugin.RoleDict.ContainsKey(ev.Attacker.SteamId) &&
-					ev.Player.TeamRole.Team == Smod2.API.Team.CLASSD ||
-					ev.Player.TeamRole.Team == Smod2.API.Team.CHAOS_INSURGENCY)
+				if (Plugin.SpyDict.ContainsKey(ev.Attacker.SteamId) &&
+					(ev.Player.TeamRole.Team == Smod2.API.Team.CLASSD ||
+					ev.Player.TeamRole.Team == Smod2.API.Team.CHAOS_INSURGENCY))
 				{
 					ev.Damage = 0;
 				}
+				
+				if (Plugin.SpyDict.ContainsKey(ev.Attacker.SteamId) && (ev.Player.TeamRole.Team == Smod2.API.Team.NINETAILFOX || ev.Player.TeamRole.Team == Smod2.API.Team.SCIENTIST))
+				{
+					if (!Plugin.SpyDict[ev.Attacker.SteamId])
+					{
+						Plugin.SpyDict[ev.Attacker.SteamId] = true;
+						ev.Player.PersonalBroadcast(10, $"You have attacked a {(ev.Player.TeamRole.Team == Smod2.API.Team.NINETAILFOX ? "<color=\"blue\">Nine Tailed Fox" : "<color=\"yellow\">Scientist")}</color>, you are now able to be killed by <color=\"blue\">Nine Tailed Fox and <color=\"yellow\">Scientists.", false);
+						ev.Player.SetHealth(ev.Player.GetHealth() - (int)ev.Damage);
+					}
+				}
 
+				if (Plugin.SpyDict.ContainsKey(ev.Player.SteamId) && ev.Attacker.TeamRole.Team == Smod2.API.Team.NINETAILFOX)
+				{
+					if (Plugin.SpyDict[ev.Player.SteamId])
+					{
+						ev.Player.SetHealth(ev.Player.GetHealth() - (int)ev.Damage);
+					}
+				}
 			}
-		}
-
-		public void OnPlayerDropItem(PlayerDropItemEvent ev)
-		{
-			if (Plugin.isEnabled && ev.Item.ItemType == ItemType.CUP) ChangeSpyRole(ev.Player);
 		}
 	}
 }

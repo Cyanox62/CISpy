@@ -3,6 +3,7 @@ using Smod2;
 using Smod2.API;
 using Smod2.Attributes;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
 namespace CISpy
@@ -23,12 +24,11 @@ namespace CISpy
 
 		//Configs
 		public static bool isEnabled = false;
-		public static float disguiseCooldown = 10f;
 		public static int guardChance = 50;
 		public static List<Role> MTFRoles = new List<Role>();
 
 
-		public static Dictionary<string, Role> RoleDict = new Dictionary<string, Role>();
+		public static Dictionary<string, bool> SpyDict = new Dictionary<string, bool>();
 
 		public static Random rand = new Random();
 
@@ -42,7 +42,7 @@ namespace CISpy
 
 			Timing.Init(this);
 
-			AddEventHandlers(new EventHandler());
+			AddEventHandlers(new EventHandler(), Smod2.Events.Priority.High);
 
 			AddCommands(new string[] { "cis", "cispy" }, new CommandHandler());
 
@@ -132,8 +132,58 @@ namespace CISpy
 		{
 			Role MTFRole = (role == -1) ? MTFRoles[rand.Next(MTFRoles.Count)] : (Role)role;
 			player.ChangeRole(MTFRole);
-			RoleDict.Add(player.SteamId, MTFRole);
-			player.GiveItem(ItemType.CUP);
+			SpyDict.Add(player.SteamId, false);
+			player.PersonalBroadcast(10, "You are a <color=\"green\">CISpy</color>! Check your console by pressing [`] or [~].", false);
+			player.SendConsoleMessage(
+				"You are a Chaos Insurgency Spy! You are immune to MTF for now, but as soon as you damage an MTF," +
+				" your spy immunity will turn off.\n\n" +
+				"Help Chaos win the round and kill as many MTF and Scientists as you can.");
+		}
+
+
+		public static void ChangeSpyRole(Player player)
+		{
+			List<Smod2.API.Item> inventory = player.GetInventory();
+			Vector pos = player.GetPosition();
+			UnityEngine.GameObject pObj = (UnityEngine.GameObject)player.GetGameObject();
+			float rot = pObj.GetComponent<PlyMovementSync>().rotation;
+
+			int health = player.GetHealth();
+			int ammo5 = player.GetAmmo(AmmoType.DROPPED_5);
+			int ammo7 = player.GetAmmo(AmmoType.DROPPED_7);
+			int ammo9 = player.GetAmmo(AmmoType.DROPPED_9);
+
+			if (player.TeamRole.Team.Equals(Smod2.API.Team.NINETAILFOX))
+				player.ChangeRole(Smod2.API.Role.CHAOS_INSURGENCY);
+
+			foreach (Smod2.API.Item item in player.GetInventory()) { item.Remove(); }
+			foreach (Smod2.API.Item item in inventory) { player.GiveItem(item.ItemType); }
+
+			player.SetAmmo(AmmoType.DROPPED_5, ammo5);
+			player.SetAmmo(AmmoType.DROPPED_7, ammo7);
+			player.SetAmmo(AmmoType.DROPPED_9, ammo9);
+
+			player.Teleport(pos, false);
+			player.SetHealth(health);
+
+			Timing.In(x =>
+			{
+				pObj.GetComponent<PlyMovementSync>().SetRotation(rot - pObj.GetComponent<PlyMovementSync>().rotation);
+			}, 0.1f);
+		}
+
+		public static Player FindPlayer(string steamid)
+		{
+			foreach (Player player in PluginManager.Manager.Server.GetPlayers())
+				if (player.SteamId == steamid)
+					return player;
+			return null;
+		}
+
+		public static void RevealSpies()
+		{
+			foreach (Player player in SpyDict.Select(x => FindPlayer(x.Key)).Where(x => x != null))
+				ChangeSpyRole(player);
 		}
 	}
 }

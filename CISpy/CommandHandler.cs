@@ -1,5 +1,7 @@
 ﻿using Smod2.Commands;
 using Smod2.API;
+using Smod2;
+using System.Collections.Generic;
 
 namespace CISpy
 {
@@ -12,7 +14,7 @@ namespace CISpy
 
 		public string GetUsage()
 		{
-			return "(SC / SPYCUP) (PLAYER)";
+			return "(CIS / CISPY) (SPAWN / REVEAL)";
 		}
 
 		public string[] OnCall(ICommandSender sender, string[] args)
@@ -21,18 +23,35 @@ namespace CISpy
 
 			if (args.Length > 0)
 			{
-				Player player = Plugin.GetPlayer(args[0], out player);
-				if (player == null) return new string[] { "Couldn't find player: " + args[0] };
-				if (Plugin.RoleDict.ContainsKey(player.SteamId)) return new string[] { player.Name + " is already a spy." };
+				switch (args[0].ToLower())
+				{
+					case "spawn":
+						{
+							if (args.Length > 1)
+							{
+								Player player = Plugin.GetPlayer(args[1], out player);
+								if (player == null) return new string[] { $"Couldn't find player: { args[1] }" };
+								if (Plugin.SpyDict.ContainsKey(player.SteamId)) return new string[] { player.Name + " is already a spy." };
 
-				Plugin.MakeSpy(player);
-
-				return new string[] { player.Name + " has been made a spy." };
+								Plugin.MakeSpy(player);
+								return new string[] { $"{ player.Name } has been made a spy." };
+							}
+							else
+							{
+								List<Player> PlayerList = PluginManager.Manager.Server.GetPlayers();
+								Player player = PlayerList[Plugin.rand.Next(PlayerList.Count)];
+								Plugin.MakeSpy(player);
+								return new string[] { $"No player specified, selecting random player...\n{ player.Name } has been made a spy." };
+							}
+						}
+					case "reveal":
+						{
+							Plugin.RevealSpies();
+							return new string[] { "Spies have been revealed." };
+						} 
+				}
 			}
-			else
-			{
-				return new string[] { GetUsage() };
-			}
+			return new string[] { GetUsage() };
 		}
 	}
 }
