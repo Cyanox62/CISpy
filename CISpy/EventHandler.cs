@@ -104,7 +104,7 @@ namespace CISpy
 					if (!Plugin.SpyDict[ev.Attacker.SteamId])
 					{
 						Plugin.SpyDict[ev.Attacker.SteamId] = true;
-						ev.Attacker.PersonalBroadcast(10, $"<color=#d0d0d0>You have attacked a {(ev.Player.TeamRole.Team == Smod2.API.Team.NINETAILFOX ? "<color=\"blue\">Nine Tailed Fox" : "<color=\"yellow\">Scientist")}</color>, you are now able to be <color=\"red\">killed</color> by <color=\"blue\">Nine Tailed Fox</color> and <color=\"yellow\">Scientists</color>.</color>", false);
+						ev.Attacker.PersonalBroadcast(10, $"<color=#d0d0d0>You have attacked a {(ev.Player.TeamRole.Team == Smod2.API.Team.NINETAILFOX ? "<color=#00b0fc>Nine Tailed Fox" : "<color=#fcff8d>Scientist")}</color>, you are now able to be killed by <color=#00b0fc>Nine Tailed Fox</color> and <color=#fcff8d>Scientists</color>.</color>", false);
 						ev.Player.SetHealth(ev.Player.GetHealth() - (int)ev.Damage);
 					}
 					else
