@@ -133,7 +133,7 @@ namespace CISpy
 			Role MTFRole = (role == -1) ? MTFRoles[rand.Next(MTFRoles.Count)] : (Role)role;
 			player.ChangeRole(MTFRole);
 			SpyDict.Add(player.SteamId, false);
-			player.PersonalBroadcast(10, "You are a <color=\"green\">CISpy</color>! Check your console by pressing [`] or [~].", false);
+			player.PersonalBroadcast(10, "You are a <color=\"green\">CISpy</color>! Check your console by pressing [`] or [~] for more info.", false);
 			player.SendConsoleMessage(
 				"You are a Chaos Insurgency Spy! You are immune to MTF for now, but as soon as you damage an MTF," +
 				" your spy immunity will turn off.\n\n" +
@@ -183,7 +183,10 @@ namespace CISpy
 		public static void RevealSpies()
 		{
 			foreach (Player player in SpyDict.Select(x => FindPlayer(x.Key)).Where(x => x != null))
+			{
 				ChangeSpyRole(player);
+				player.PersonalBroadcast(10, "Your fellow <color\"green\">Chaos Insurgency</color> have died, you have been revealed! It's up to the spies now!", false);
+			}
 		}
 	}
 }
