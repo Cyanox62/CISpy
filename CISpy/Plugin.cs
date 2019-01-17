@@ -27,7 +27,6 @@ namespace CISpy
 		public static int guardChance = 50;
 		public static List<Role> MTFRoles = new List<Role>();
 
-
 		public static Dictionary<string, bool> SpyDict = new Dictionary<string, bool>();
 
 		public static Random rand = new Random();

@@ -59,24 +59,33 @@ namespace CISpy
 		{
 			if (Plugin.isEnabled)
 			{
-				if (ev.Player.TeamRole.Role.Equals(Role.UNASSIGNED)) return;
-				if (Plugin.SpyDict.ContainsKey(ev.Player.SteamId))
-					Plugin.SpyDict.Remove(ev.Player.SteamId);
+				Timing.InTicks(() =>
+				{
+					if (ev.Player.TeamRole.Role.Equals(Role.UNASSIGNED)) return;
+					if (Plugin.SpyDict.ContainsKey(ev.Player.SteamId))
+						Plugin.SpyDict.Remove(ev.Player.SteamId);
 
-				int MTFAliveCount = CountRoles(Smod2.API.Team.NINETAILFOX);
-				bool CiAlive = CountRoles(Smod2.API.Team.CHAOS_INSURGENCY) > 0;
-				bool ScpAlive = CountRoles(Smod2.API.Team.SCP) > 0;
-				bool DClassAlive = CountRoles(Smod2.API.Team.CLASSD) > 0;
-				bool ScientistsAlive = CountRoles(Smod2.API.Team.SCIENTIST) > 0;
-				foreach (Player player in PluginManager.Manager.Server.GetPlayers().Where(x => x.TeamRole.Team == Smod2.API.Team.NINETAILFOX && Plugin.SpyDict.ContainsKey(x.SteamId))) MTFAliveCount--;
-				bool MTFAlive = MTFAliveCount > 0;
+					int MTFAliveCount = CountRoles(Smod2.API.Team.NINETAILFOX);
+					bool CiAlive = CountRoles(Smod2.API.Team.CHAOS_INSURGENCY) > 0;
+					bool ScpAlive = CountRoles(Smod2.API.Team.SCP) > 0;
+					bool DClassAlive = CountRoles(Smod2.API.Team.CLASSD) > 0;
+					bool ScientistsAlive = CountRoles(Smod2.API.Team.SCIENTIST) > 0;
+					foreach (Player player in PluginManager.Manager.Server.GetPlayers().Where(x => x.TeamRole.Team == Smod2.API.Team.NINETAILFOX && Plugin.SpyDict.ContainsKey(x.SteamId))) MTFAliveCount--;
+					bool MTFAlive = MTFAliveCount > 0;
 
-				if ((CiAlive || (CiAlive && ScpAlive) || (CiAlive && DClassAlive)) && !ScientistsAlive && !MTFAlive)
-					Plugin.RevealSpies();
-				if ((ScpAlive || DClassAlive) && !ScientistsAlive && !MTFAlive)
-					Plugin.RevealSpies();
-				if ((ScientistsAlive || MTFAlive || (ScientistsAlive && MTFAlive)) && !CiAlive && !ScpAlive && !DClassAlive)
-					Plugin.RevealSpies();
+					PluginManager.Manager.Logger.Info("", CiAlive.ToString());
+					PluginManager.Manager.Logger.Info("", ScpAlive.ToString());
+					PluginManager.Manager.Logger.Info("", DClassAlive.ToString());
+					PluginManager.Manager.Logger.Info("", ScientistsAlive.ToString());
+					PluginManager.Manager.Logger.Info("", MTFAlive.ToString());
+
+					if ((CiAlive || (CiAlive && ScpAlive) || (CiAlive && DClassAlive)) && !ScientistsAlive && !MTFAlive)
+						Plugin.RevealSpies();
+					if ((ScpAlive || DClassAlive) && !ScientistsAlive && !MTFAlive)
+						Plugin.RevealSpies();
+					if ((ScientistsAlive || MTFAlive || (ScientistsAlive && MTFAlive)) && !CiAlive && !ScpAlive && !DClassAlive)
+						Plugin.RevealSpies();
+				}, 4);
 			}
 		}
 
