@@ -12,6 +12,8 @@ namespace CISpy
 	partial class EventHandler : IEventHandlerWaitingForPlayers, IEventHandlerRoundStart, IEventHandlerTeamRespawn, IEventHandlerSetRole,
 		IEventHandlerPlayerDie, IEventHandlerPlayerHurt
 	{
+		bool isDisplay = false;
+
 		public void OnWaitingForPlayers(WaitingForPlayersEvent ev)
 		{
 			LoadConfig();
@@ -107,8 +109,21 @@ namespace CISpy
 				{
 					ev.Damage = 0;
 				}
+
+				if (Plugin.SpyDict.ContainsKey(ev.Attacker.SteamId) && Plugin.SpyDict.ContainsKey(ev.Player.SteamId))
+				{
+					if (!isDisplay)
+					{
+						ev.Attacker.PersonalBroadcast(10, "You are shooting another <b><color=\"green\">CISpy</color></b>!", false);
+						isDisplay = true;
+					}
+					Timing.In(x =>
+					{
+						isDisplay = false;
+					}, 10);
+				}
 				
-				if (Plugin.SpyDict.ContainsKey(ev.Attacker.SteamId) && (ev.Player.TeamRole.Team == Smod2.API.Team.NINETAILFOX || ev.Player.TeamRole.Team == Smod2.API.Team.SCIENTIST))
+				if (Plugin.SpyDict.ContainsKey(ev.Attacker.SteamId) && !Plugin.SpyDict.ContainsKey(ev.Player.SteamId) && (ev.Player.TeamRole.Team == Smod2.API.Team.NINETAILFOX || ev.Player.TeamRole.Team == Smod2.API.Team.SCIENTIST))
 				{
 					if (!Plugin.SpyDict[ev.Attacker.SteamId])
 					{
