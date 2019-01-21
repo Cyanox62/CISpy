@@ -75,12 +75,6 @@ namespace CISpy
 					foreach (Player player in PluginManager.Manager.Server.GetPlayers().Where(x => x.TeamRole.Team == Smod2.API.Team.NINETAILFOX && Plugin.SpyDict.ContainsKey(x.SteamId))) MTFAliveCount--;
 					bool MTFAlive = MTFAliveCount > 0;
 
-					PluginManager.Manager.Logger.Info("", CiAlive.ToString());
-					PluginManager.Manager.Logger.Info("", ScpAlive.ToString());
-					PluginManager.Manager.Logger.Info("", DClassAlive.ToString());
-					PluginManager.Manager.Logger.Info("", ScientistsAlive.ToString());
-					PluginManager.Manager.Logger.Info("", MTFAlive.ToString());
-
 					if ((CiAlive || (CiAlive && ScpAlive) || (CiAlive && DClassAlive)) && !ScientistsAlive && !MTFAlive)
 						Plugin.RevealSpies();
 					if ((ScpAlive || DClassAlive) && !ScientistsAlive && !MTFAlive)
