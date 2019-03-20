@@ -181,7 +181,7 @@ namespace CISpy
 
 		public static void RevealSpies()
 		{
-			foreach (Player player in SpyDict.Select(x => FindPlayer(x.Key)).Where(x => x != null))
+			foreach (Player player in SpyDict.Select(x => FindPlayer(x.Key)).Where(x => x != null && x.TeamRole.Team != Smod2.API.Team.CHAOS_INSURGENCY))
 			{
 				ChangeSpyRole(player);
 				player.PersonalBroadcast(10, "<color=#d0d0d0>Your fellow <color=\"green\">Chaos Insurgency</color> have died, you have been revealed! It's up to the spies now!</color>", false);
