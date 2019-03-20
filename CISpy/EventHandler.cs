@@ -9,10 +9,11 @@ using scp4aiur;
 
 namespace CISpy
 {
-	partial class EventHandler : IEventHandlerWaitingForPlayers, IEventHandlerRoundStart, IEventHandlerTeamRespawn, IEventHandlerSetRole,
+	partial class EventHandler : IEventHandlerWaitingForPlayers, IEventHandlerRoundStart, IEventHandlerRoundEnd, IEventHandlerTeamRespawn, IEventHandlerSetRole,
 		IEventHandlerPlayerDie, IEventHandlerPlayerHurt
 	{
 		bool isDisplay = false;
+		bool isRoundStarted = false;
 
 		public void OnWaitingForPlayers(WaitingForPlayersEvent ev)
 		{
@@ -23,6 +24,7 @@ namespace CISpy
 		{
 			if (Plugin.isEnabled)
 			{
+				isRoundStarted = true;
 				Plugin.SpyDict.Clear();
 				if (Plugin.rand.Next(1, 101) <= Plugin.guardChance)
 				{
@@ -34,6 +36,11 @@ namespace CISpy
 						Plugin.MakeSpy(Guards[Plugin.rand.Next(Guards.Count)], 15);
 				}
 			}
+		}
+
+		public void OnRoundEnd(RoundEndEvent ev)
+		{
+			isRoundStarted = false;
 		}
 
 		public void OnTeamRespawn(TeamRespawnEvent ev)
@@ -89,7 +96,7 @@ namespace CISpy
 		{
 			if (Plugin.isEnabled && ev.DamageType != DamageType.POCKET)
 			{
-				if (ev.Player.SteamId == ev.Attacker.SteamId) return;
+				if (ev.Player.SteamId == ev.Attacker.SteamId || !isRoundStarted) return;
 				if ((ev.Attacker.TeamRole.Team == Smod2.API.Team.CHAOS_INSURGENCY ||
 					ev.Attacker.TeamRole.Team == Smod2.API.Team.CLASSD) &&
 					Plugin.SpyDict.ContainsKey(ev.Player.SteamId))
