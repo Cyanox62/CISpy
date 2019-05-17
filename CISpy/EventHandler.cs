@@ -116,13 +116,13 @@ namespace CISpy
 				{
 					if (!isDisplaySpy)
 					{
-						ev.Attacker.PersonalBroadcast(10, "You are shooting another <b><color=\"green\">CISpy</color></b>!", false);
+						ev.Attacker.PersonalBroadcast(5, "You are shooting another <b><color=\"green\">CISpy</color></b>!", false);
 						isDisplaySpy = true;
 					}
 					Timing.In(x =>
 					{
 						isDisplaySpy = false;
-					}, 10);
+					}, 5);
 				}
 				
 				if (Plugin.SpyDict.ContainsKey(ev.Attacker.SteamId) && !Plugin.SpyDict.ContainsKey(ev.Player.SteamId) && (ev.Player.TeamRole.Team == Smod2.API.Team.NINETAILFOX || ev.Player.TeamRole.Team == Smod2.API.Team.SCIENTIST))
@@ -143,13 +143,13 @@ namespace CISpy
 				{
 					if (!isDisplayFriendly)
 					{
-						ev.Attacker.PersonalBroadcast(10, "You are shooting a <b><color=\"green\">CISpy</color></b>!", false);
+						ev.Attacker.PersonalBroadcast(5, "You are shooting a <b><color=\"green\">CISpy</color></b>!", false);
 						isDisplayFriendly = true;
 					}
 					Timing.In(x =>
 					{
 						isDisplayFriendly = false;
-					}, 10);
+					}, 5);
 				}
 
 				if (Plugin.SpyDict.ContainsKey(ev.Player.SteamId) && (ev.Attacker.TeamRole.Team == Smod2.API.Team.NINETAILFOX || ev.Attacker.TeamRole.Team == Smod2.API.Team.SCIENTIST))
