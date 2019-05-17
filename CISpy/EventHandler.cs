@@ -12,7 +12,8 @@ namespace CISpy
 	partial class EventHandler : IEventHandlerWaitingForPlayers, IEventHandlerRoundStart, IEventHandlerRoundEnd, IEventHandlerTeamRespawn, IEventHandlerSetRole,
 		IEventHandlerPlayerDie, IEventHandlerPlayerHurt
 	{
-		bool isDisplay = false;
+		bool isDisplayFriendly = false;
+		bool isDisplaySpy = false;
 		bool isRoundStarted = false;
 
 		public void OnWaitingForPlayers(WaitingForPlayersEvent ev)
@@ -113,14 +114,14 @@ namespace CISpy
 
 				if (Plugin.SpyDict.ContainsKey(ev.Attacker.SteamId) && Plugin.SpyDict.ContainsKey(ev.Player.SteamId))
 				{
-					if (!isDisplay)
+					if (!isDisplaySpy)
 					{
 						ev.Attacker.PersonalBroadcast(10, "You are shooting another <b><color=\"green\">CISpy</color></b>!", false);
-						isDisplay = true;
+						isDisplaySpy = true;
 					}
 					Timing.In(x =>
 					{
-						isDisplay = false;
+						isDisplaySpy = false;
 					}, 10);
 				}
 				
@@ -136,6 +137,19 @@ namespace CISpy
 					{
 						ev.Player.SetHealth(ev.Player.GetHealth() - (int)ev.Damage);
 					}
+				}
+
+				if (Plugin.SpyDict.ContainsKey(ev.Player.SteamId) && ev.Player.TeamRole.Team == Smod2.API.Team.CHAOS_INSURGENCY)
+				{
+					if (!isDisplayFriendly)
+					{
+						ev.Attacker.PersonalBroadcast(10, "You are shooting a <b><color=\"green\">CISpy</color></b>!", false);
+						isDisplayFriendly = true;
+					}
+					Timing.In(x =>
+					{
+						isDisplayFriendly = false;
+					}, 10);
 				}
 
 				if (Plugin.SpyDict.ContainsKey(ev.Player.SteamId) && (ev.Attacker.TeamRole.Team == Smod2.API.Team.NINETAILFOX || ev.Attacker.TeamRole.Team == Smod2.API.Team.SCIENTIST))

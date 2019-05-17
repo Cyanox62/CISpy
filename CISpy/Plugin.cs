@@ -45,14 +45,14 @@ namespace CISpy
 
 			AddCommands(new string[] { "cis", "cispy" }, new CommandHandler());
 
-			AddConfig(new Smod2.Config.ConfigSetting("cis_enabled", true, Smod2.Config.SettingType.BOOL, true, "Enables CiSpy."));
-			AddConfig(new Smod2.Config.ConfigSetting("cis_cooldown", 10f, Smod2.Config.SettingType.FLOAT, true, "Determines the cooldown from switching classes."));
-			AddConfig(new Smod2.Config.ConfigSetting("cis_guard_chance", 50, Smod2.Config.SettingType.NUMERIC, true, "The chance for a facility guard to spawn as a spy at the start of the round."));
+			AddConfig(new Smod2.Config.ConfigSetting("cis_enabled", true, false, true, "Enables CiSpy."));
+			AddConfig(new Smod2.Config.ConfigSetting("cis_cooldown", 10f, false, true, "Determines the cooldown from switching classes."));
+			AddConfig(new Smod2.Config.ConfigSetting("cis_guard_chance", 50, false, true, "The chance for a facility guard to spawn as a spy at the start of the round."));
 			AddConfig(new Smod2.Config.ConfigSetting("cis_spy_roles", new[] 
 			{
 				11,
 				13
-			}, Smod2.Config.SettingType.NUMERIC_LIST, true, "Which roles can be a spy."));
+			}, false, true, "Which roles can be a spy."));
 		}
 
 		public static int LevenshteinDistance(string s, string t)
@@ -184,7 +184,7 @@ namespace CISpy
 			foreach (Player player in SpyDict.Select(x => FindPlayer(x.Key)).Where(x => x != null && x.TeamRole.Team != Smod2.API.Team.CHAOS_INSURGENCY))
 			{
 				ChangeSpyRole(player);
-				player.PersonalBroadcast(10, "<color=#d0d0d0>Your fellow <color=\"green\">Chaos Insurgency</color> have died, you have been revealed! It's up to the spies now!</color>", false);
+				player.PersonalBroadcast(10, "<color=#d0d0d0>Your fellow <color=\"green\">Chaos Insurgency</color> have died, you have been revealed!</color>", false);
 			}
 		}
 	}
