@@ -139,7 +139,7 @@ namespace CISpy
 					}
 				}
 
-				if (Plugin.SpyDict.ContainsKey(ev.Player.SteamId) && ev.Player.TeamRole.Team == Smod2.API.Team.CHAOS_INSURGENCY)
+				if (Plugin.SpyDict.ContainsKey(ev.Player.SteamId) && ev.Attacker.TeamRole.Team == Smod2.API.Team.CHAOS_INSURGENCY)
 				{
 					if (!isDisplayFriendly)
 					{
