@@ -14,6 +14,7 @@ namespace CISpy
 			Plugin.isEnabled = Plugin.instance.GetConfigBool("cis_enabled");
 			Plugin.guardChance = Plugin.instance.GetConfigInt("cis_guard_chance");
 			Plugin.MTFRoles = Plugin.instance.GetConfigIntList("cis_spy_roles").Select(x => (Role)x).ToList();
+			Plugin.canSpawnWithGrenade = Plugin.instance.GetConfigBool("cis_spawn_with_grenade");
 		}
 
 		public static int CountRoles(Role role)

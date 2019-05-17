@@ -25,6 +25,7 @@ namespace CISpy
 		//Configs
 		public static bool isEnabled = false;
 		public static int guardChance = 50;
+		public static bool canSpawnWithGrenade = true;
 		public static List<Role> MTFRoles = new List<Role>();
 
 		public static Dictionary<string, bool> SpyDict = new Dictionary<string, bool>();
@@ -46,13 +47,13 @@ namespace CISpy
 			AddCommands(new string[] { "cis", "cispy" }, new CommandHandler());
 
 			AddConfig(new Smod2.Config.ConfigSetting("cis_enabled", true, false, true, "Enables CiSpy."));
-			AddConfig(new Smod2.Config.ConfigSetting("cis_cooldown", 10f, false, true, "Determines the cooldown from switching classes."));
 			AddConfig(new Smod2.Config.ConfigSetting("cis_guard_chance", 50, false, true, "The chance for a facility guard to spawn as a spy at the start of the round."));
 			AddConfig(new Smod2.Config.ConfigSetting("cis_spy_roles", new[] 
 			{
 				11,
 				13
 			}, false, true, "Which roles can be a spy."));
+			AddConfig(new Smod2.Config.ConfigSetting("cis_spawn_with_grenade", true, false, true, "If spies should be able to spawn with frag grenades"));
 		}
 
 		public static int LevenshteinDistance(string s, string t)
@@ -156,7 +157,17 @@ namespace CISpy
 				player.ChangeRole(Smod2.API.Role.CHAOS_INSURGENCY);
 
 			foreach (Smod2.API.Item item in player.GetInventory()) { item.Remove(); }
-			foreach (Smod2.API.Item item in inventory) { player.GiveItem(item.ItemType); }
+			foreach (Smod2.API.Item item in inventory)
+			{
+				if (canSpawnWithGrenade && item.ItemType == ItemType.FRAG_GRENADE)
+				{
+					player.GiveItem(ItemType.FLASHBANG);
+				}
+				else
+				{
+					player.GiveItem(item.ItemType);
+				}
+			}
 
 			player.SetAmmo(AmmoType.DROPPED_5, ammo5);
 			player.SetAmmo(AmmoType.DROPPED_7, ammo7);
