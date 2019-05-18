@@ -114,6 +114,7 @@ namespace CISpy
 
 				if (Plugin.SpyDict.ContainsKey(ev.Attacker.SteamId) && Plugin.SpyDict.ContainsKey(ev.Player.SteamId))
 				{
+					ev.Damage = 0;
 					if (!isDisplaySpy)
 					{
 						ev.Attacker.PersonalBroadcast(5, "You are shooting another <b><color=\"green\">CISpy</color></b>!", false);
@@ -141,6 +142,7 @@ namespace CISpy
 
 				if (Plugin.SpyDict.ContainsKey(ev.Player.SteamId) && ev.Attacker.TeamRole.Team == Smod2.API.Team.CHAOS_INSURGENCY)
 				{
+					ev.Damage = 0;
 					if (!isDisplayFriendly)
 					{
 						ev.Attacker.PersonalBroadcast(5, "You are shooting a <b><color=\"green\">CISpy</color></b>!", false);
