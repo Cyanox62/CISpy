@@ -159,13 +159,10 @@ namespace CISpy
 			foreach (Smod2.API.Item item in player.GetInventory()) { item.Remove(); }
 			foreach (Smod2.API.Item item in inventory)
 			{
-				if (canSpawnWithGrenade && item.ItemType == ItemType.FRAG_GRENADE)
+				if (!canSpawnWithGrenade && item.ItemType == ItemType.FRAG_GRENADE)
 				{
+					item.Remove();
 					player.GiveItem(ItemType.FLASHBANG);
-				}
-				else
-				{
-					player.GiveItem(item.ItemType);
 				}
 			}
 
