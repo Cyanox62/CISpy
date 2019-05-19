@@ -26,6 +26,7 @@ namespace CISpy
 		public static bool isEnabled = false;
 		public static int guardChance = 50;
 		public static bool canSpawnWithGrenade = true;
+		public static int spawnChance = 40;
 		public static List<Role> MTFRoles = new List<Role>();
 
 		public static Dictionary<string, bool> SpyDict = new Dictionary<string, bool>();
@@ -54,6 +55,7 @@ namespace CISpy
 				13
 			}, false, true, "Which roles can be a spy."));
 			AddConfig(new Smod2.Config.ConfigSetting("cis_spawn_with_grenade", true, false, true, "If spies should be able to spawn with frag grenades"));
+			AddConfig(new Smod2.Config.ConfigSetting("cis_spawn_chance", 40, false, true, "The chance for a CISpy to spawn in an MTF wave."));
 		}
 
 		public static int LevenshteinDistance(string s, string t)

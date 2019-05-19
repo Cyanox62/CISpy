@@ -46,7 +46,7 @@ namespace CISpy
 
 		public void OnTeamRespawn(TeamRespawnEvent ev)
 		{
-			if (Plugin.isEnabled && !ev.SpawnChaos)
+			if (Plugin.isEnabled && !ev.SpawnChaos && Plugin.rand.Next(1, 101) <= Plugin.spawnChance)
 			{
 				Timing.Next(() =>
 				{
