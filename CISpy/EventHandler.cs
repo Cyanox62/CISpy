@@ -6,6 +6,7 @@ using Smod2.EventSystem.Events;
 using System.Collections.Generic;
 using System.Linq;
 using scp4aiur;
+using scp035.API;
 
 namespace CISpy
 {
@@ -98,6 +99,18 @@ namespace CISpy
 			if (Plugin.isEnabled && ev.DamageType != DamageType.POCKET)
 			{
 				if (ev.Player.SteamId == ev.Attacker.SteamId || !isRoundStarted) return;
+
+				// SCP-035
+				Player scp035 = Scp035Data.GetScp035();
+				if (ev.Attacker.TeamRole.Team == ev.Player.TeamRole.Team &&
+					((Plugin.SpyDict.ContainsKey(ev.Attacker.SteamId) && ev.Player.PlayerId == scp035?.PlayerId) ||
+					(Plugin.SpyDict.ContainsKey(ev.Player.SteamId) && ev.Attacker.PlayerId == scp035?.PlayerId)))
+				{
+					ev.Player.SetHealth(ev.Player.GetHealth() - (int)ev.Damage);
+					return;
+				}
+				// END SCP-035
+
 				if ((ev.Attacker.TeamRole.Team == Smod2.API.Team.CHAOS_INSURGENCY ||
 					ev.Attacker.TeamRole.Team == Smod2.API.Team.CLASSD) &&
 					Plugin.SpyDict.ContainsKey(ev.Player.SteamId))

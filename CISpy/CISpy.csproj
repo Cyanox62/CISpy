@@ -33,11 +33,14 @@
   <ItemGroup>
     <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\Desktop\3.4.0\Assembly-CSharp.dll</HintPath>
+      <HintPath>..\..\..\..\Desktop\3.4.1\Assembly-CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="scp035">
+      <HintPath>..\..\..\..\Desktop\SCPSL Plugins\SCPs\scp035.dll</HintPath>
     </Reference>
     <Reference Include="Smod2, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\Desktop\3.4.0\Smod2.dll</HintPath>
+      <HintPath>..\..\..\..\Desktop\3.4.1\Smod2.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
