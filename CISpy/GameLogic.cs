@@ -35,5 +35,33 @@ namespace CISpy
 					count++;
 			return count;
 		}
+		public static IEnumerator<float> CheckReveal(Player player = null)
+		{
+			yield return MEC.Timing.WaitForOneFrame;
+			yield return MEC.Timing.WaitForOneFrame;
+			yield return MEC.Timing.WaitForOneFrame;
+			yield return MEC.Timing.WaitForOneFrame;
+			if (player != null)
+			{
+				if (player.TeamRole.Role.Equals(Role.UNASSIGNED)) yield break;
+				if (Plugin.SpyDict.ContainsKey(player.SteamId))
+					Plugin.SpyDict.Remove(player.SteamId);
+			}
+			else yield return MEC.Timing.WaitForSeconds(0.4f);
+			int MTFAliveCount = CountRoles(Smod2.API.Team.NINETAILFOX);
+			bool CiAlive = CountRoles(Smod2.API.Team.CHAOS_INSURGENCY) > 0;
+			bool ScpAlive = CountRoles(Smod2.API.Team.SCP) > 0;
+			bool DClassAlive = CountRoles(Smod2.API.Team.CLASSD) > 0;
+			bool ScientistsAlive = CountRoles(Smod2.API.Team.SCIENTIST) > 0;
+			foreach (Player ply in PluginManager.Manager.Server.GetPlayers().Where(x => x.TeamRole.Team == Smod2.API.Team.NINETAILFOX && Plugin.SpyDict.ContainsKey(x.SteamId))) MTFAliveCount--;
+			bool MTFAlive = MTFAliveCount > 0;
+
+			if (CiAlive && !ScientistsAlive && !MTFAlive)
+				Plugin.RevealSpies();
+			if ((ScpAlive || DClassAlive) && !ScientistsAlive && !MTFAlive)
+				Plugin.RevealSpies();
+			if ((ScientistsAlive || MTFAlive) && !CiAlive && !ScpAlive && !DClassAlive)
+				Plugin.RevealSpies();
+		}
 	}
 }
