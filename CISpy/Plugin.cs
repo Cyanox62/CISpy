@@ -20,7 +20,7 @@ namespace CISpy
 	)]
 	public class Plugin : Smod2.Plugin
     {
-		public static Smod2.Plugin instance;
+		public static Plugin instance;
 
 		//Configs
 		public static bool isEnabled = false;
@@ -40,7 +40,22 @@ namespace CISpy
 		public static readonly string consoleMessage = "You are a Chaos Insurgency Spy! You are immune to MTF for now, but as soon as you damage an MTF," +
 				" your spy immunity will turn off.\n\n" +
 				"Help Chaos win the round and kill as many MTF and Scientists as you can.";
-
+		[LangOption]
+		public static readonly string lastCI = "<color=#d0d0d0>Your fellow <color=\"green\">Chaos Insurgency</color> have died, you have been revealed!</color>";
+		[LangOption]
+		public readonly string killedBySpy = "You were killed by a <b><color=\"green\">CISpy</color></b>!";
+		[LangOption]
+		public readonly string shootingSpy = "You are shooting a <b><color=\"green\">CISpy</color></b>!";
+		[LangOption]
+		public readonly string cantShoot = "A <b><color=\"green\">CISpy</color></b> can't shoot <b><color=\"green\">CI</color></b> or <b><color=\"orange\">Class-Ds</color></b>!";
+		[LangOption]
+		public readonly string anotherCiSpy = "You are shooting another <b><color=\"green\">CISpy</color></b>!";
+		[LangOption]
+		public readonly string ableToBeKilled = "<color=#d0d0d0>You have attacked a {ROLE}, you are now able to be killed by <color=#00b0fc>Nine Tailed Fox</color> and <color=#fcff8d>Scientists</color>.</color>";
+		[LangOption]
+		public readonly string ntf = "<color=#00b0fc>Nine Tailed Fox</color>";
+		[LangOption]
+		public readonly string scientist = "<color=#fcff8d>Scientist</color>";
 		public override void OnEnable() { }
 
 		public override void OnDisable() { }
@@ -110,7 +125,7 @@ namespace CISpy
 			string str1 = args.ToLower();
 			foreach (Player pl in PluginManager.Manager.Server.GetPlayers(str1))
 			{
-				if (!pl.Name.ToLower().Contains(args.ToLower())) { goto NoPlayer; }
+				if (!pl.Name.ToLower().Contains(args.ToLower())) continue; //{ goto NoPlayer; }
 				if (str1.Length < maxNameLength)
 				{
 					int x = maxNameLength - str1.Length;
@@ -131,7 +146,7 @@ namespace CISpy
 						plyer = pl;
 					}
 				}
-				NoPlayer:;
+				//NoPlayer:;
 			}
 			playerOut = plyer;
 			return playerOut;
@@ -203,7 +218,7 @@ namespace CISpy
 			foreach (Player player in SpyDict.Select(x => FindPlayer(x.Key)).Where(x => x != null && x.TeamRole.Team != Smod2.API.Team.CHAOS_INSURGENCY))
 			{
 				ChangeSpyRole(player);
-				player.PersonalBroadcast(10, "<color=#d0d0d0>Your fellow <color=\"green\">Chaos Insurgency</color> have died, you have been revealed!</color>", false);
+				player.PersonalBroadcast(10, lastCI, false);
 			}
 		}
 	}

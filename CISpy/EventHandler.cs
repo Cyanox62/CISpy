@@ -63,7 +63,7 @@ namespace CISpy
 		{
 			if (Plugin.isEnabled)
 			{
-				if (Plugin.SpyDict.ContainsKey(ev.Killer.SteamId)) ev.Player.PersonalBroadcast(7, "You were killed by a <b><color=\"green\">CISpy</color></b>!", false);
+				if (Plugin.SpyDict.ContainsKey(ev.Killer.SteamId)) ev.Player.PersonalBroadcast(7, Plugin.instance.killedBySpy, false);
 				MEC.Timing.RunCoroutine(CheckReveal(ev.Player));
 			}
 		}
@@ -79,7 +79,7 @@ namespace CISpy
 				{
 					ev.Damage = 0;
 					ev.Attacker.PersonalClearBroadcasts();
-					ev.Attacker.PersonalBroadcast(5, "You are shooting a <b><color=\"green\">CISpy</color></b>!", false);
+					ev.Attacker.PersonalBroadcast(5, Plugin.instance.shootingSpy, false);
 					return;
 				}
 
@@ -88,7 +88,7 @@ namespace CISpy
 					ev.Player.TeamRole.Team == Smod2.API.Team.CHAOS_INSURGENCY))
 				{
 					ev.Attacker.PersonalClearBroadcasts();
-					ev.Attacker.PersonalBroadcast(5, "A <b><color=\"green\">CISpy</color></b> can't shoot <b><color=\"green\">CI</color></b> or <b><color=\"orange\">Class-Ds</color></b>!", false);
+					ev.Attacker.PersonalBroadcast(5, Plugin.instance.cantShoot, false);
 					ev.Damage = 0;
 					return;
 				}
@@ -97,7 +97,7 @@ namespace CISpy
 				{
 					ev.Damage = 0;
 					ev.Attacker.PersonalClearBroadcasts();
-					ev.Attacker.PersonalBroadcast(5, "You are shooting another <b><color=\"green\">CISpy</color></b>!", false);
+					ev.Attacker.PersonalBroadcast(5, Plugin.instance.anotherCiSpy, false);
 					return;
 				}
 				
@@ -107,7 +107,7 @@ namespace CISpy
 					if (!Plugin.SpyDict[ev.Attacker.SteamId])
 					{
 						Plugin.SpyDict[ev.Attacker.SteamId] = true;
-						ev.Attacker.PersonalBroadcast(10, $"<color=#d0d0d0>You have attacked a {(ev.Player.TeamRole.Team == Smod2.API.Team.NINETAILFOX ? "<color=#00b0fc>Nine Tailed Fox" : "<color=#fcff8d>Scientist")}</color>, you are now able to be killed by <color=#00b0fc>Nine Tailed Fox</color> and <color=#fcff8d>Scientists</color>.</color>", false);
+						ev.Attacker.PersonalBroadcast(10, Plugin.instance.ableToBeKilled.Replace("{ROLE}", ev.Player.TeamRole.Team == Smod2.API.Team.NINETAILFOX ? Plugin.instance.ntf : Plugin.instance.scientist), false);
 						ev.Player.SetHealth(ev.Player.GetHealth() - (int)ev.Damage);
 					}
 					else
