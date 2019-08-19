@@ -1,10 +1,10 @@
-﻿using scp4aiur;
-using Smod2;
+﻿using Smod2;
 using Smod2.API;
 using Smod2.Attributes;
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using Smod2.Lang;
 
 namespace CISpy
 {
@@ -34,6 +34,13 @@ namespace CISpy
 
 		public static Random rand = new Random();
 
+		[LangOption]
+		public static readonly string broadcast = "<color=#d0d0d0>You are a <b><color=\"green\">CISpy</color></b>! Check your console by pressing [`] or [~] for more info.</color>";
+		[LangOption]
+		public static readonly string consoleMessage = "You are a Chaos Insurgency Spy! You are immune to MTF for now, but as soon as you damage an MTF," +
+				" your spy immunity will turn off.\n\n" +
+				"Help Chaos win the round and kill as many MTF and Scientists as you can.";
+
 		public override void OnEnable() { }
 
 		public override void OnDisable() { }
@@ -41,8 +48,6 @@ namespace CISpy
 		public override void Register()
 		{
 			instance = this;
-
-			Timing.Init(this);
 
 			AddEventHandlers(new EventHandler(), Smod2.Events.Priority.High);
 
@@ -132,8 +137,9 @@ namespace CISpy
 			return playerOut;
 		}
 
-		public static void MakeSpy(Player player, int role = -1)
+		public static IEnumerator<float> MakeSpy(Player player, int role = -1)
 		{
+			yield return MEC.Timing.WaitForOneFrame;
 			Role MTFRole = (role == -1) ? MTFRoles[rand.Next(MTFRoles.Count)] : (Role)role;
 			player.ChangeRole(MTFRole);
 			foreach (Smod2.API.Item item in player.GetInventory())
@@ -145,11 +151,8 @@ namespace CISpy
 				}
 			}
 			SpyDict.Add(player.SteamId, false);
-			player.PersonalBroadcast(10, "<color=#d0d0d0>You are a <b><color=\"green\">CISpy</color></b>! Check your console by pressing [`] or [~] for more info.</color>", false);
-			player.SendConsoleMessage(
-				"You are a Chaos Insurgency Spy! You are immune to MTF for now, but as soon as you damage an MTF," +
-				" your spy immunity will turn off.\n\n" +
-				"Help Chaos win the round and kill as many MTF and Scientists as you can.");
+			player.PersonalBroadcast(10, broadcast, false);
+			player.SendConsoleMessage(consoleMessage);
 		}
 
 
@@ -178,10 +181,13 @@ namespace CISpy
 			player.Teleport(pos, false);
 			player.SetHealth(health);
 
-			Timing.In(x =>
-			{
-				pObj.GetComponent<PlyMovementSync>().SetRotation(rot - pObj.GetComponent<PlyMovementSync>().rotation);
-			}, 0.1f);
+			MEC.Timing.RunCoroutine(RotatePlayer(pObj, rot), MEC.Segment.Update);
+		}
+
+		private static IEnumerator<float> RotatePlayer(UnityEngine.GameObject pObj, float rot)
+		{
+			yield return MEC.Timing.WaitForSeconds(0.1f);
+			pObj.GetComponent<PlyMovementSync>().SetRotation(rot - pObj.GetComponent<PlyMovementSync>().rotation);
 		}
 
 		public static Player FindPlayer(string steamid)

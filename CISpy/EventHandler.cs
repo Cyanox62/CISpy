@@ -5,7 +5,6 @@ using Smod2.Events;
 using Smod2.EventSystem.Events;
 using System.Collections.Generic;
 using System.Linq;
-using scp4aiur;
 
 namespace CISpy
 {
@@ -48,10 +47,7 @@ namespace CISpy
 		{
 			if (Plugin.isEnabled && !ev.SpawnChaos && Plugin.rand.Next(1, 101) <= Plugin.spawnChance && ev.PlayerList.Count >= Plugin.minSizeForSpy)
 			{
-				Timing.Next(() =>
-				{
-					Plugin.MakeSpy(ev.PlayerList[Plugin.rand.Next(ev.PlayerList.Count)]);
-				});
+				MEC.Timing.RunCoroutine(Plugin.MakeSpy(ev.PlayerList[Plugin.rand.Next(ev.PlayerList.Count)]), MEC.Segment.Update);
 			}
 		}
 
@@ -69,28 +65,36 @@ namespace CISpy
 		{
 			if (Plugin.isEnabled)
 			{
-				Timing.InTicks(() =>
-				{
-					if (ev.Player.TeamRole.Role.Equals(Role.UNASSIGNED)) return;
-					if (Plugin.SpyDict.ContainsKey(ev.Player.SteamId))
-						Plugin.SpyDict.Remove(ev.Player.SteamId);
-
-					int MTFAliveCount = CountRoles(Smod2.API.Team.NINETAILFOX);
-					bool CiAlive = CountRoles(Smod2.API.Team.CHAOS_INSURGENCY) > 0;
-					bool ScpAlive = CountRoles(Smod2.API.Team.SCP) > 0;
-					bool DClassAlive = CountRoles(Smod2.API.Team.CLASSD) > 0;
-					bool ScientistsAlive = CountRoles(Smod2.API.Team.SCIENTIST) > 0;
-					foreach (Player player in PluginManager.Manager.Server.GetPlayers().Where(x => x.TeamRole.Team == Smod2.API.Team.NINETAILFOX && Plugin.SpyDict.ContainsKey(x.SteamId))) MTFAliveCount--;
-					bool MTFAlive = MTFAliveCount > 0;
-
-					if ((CiAlive || (CiAlive && ScpAlive) || (CiAlive && DClassAlive)) && !ScientistsAlive && !MTFAlive)
-						Plugin.RevealSpies();
-					if ((ScpAlive || DClassAlive) && !ScientistsAlive && !MTFAlive)
-						Plugin.RevealSpies();
-					if ((ScientistsAlive || MTFAlive || (ScientistsAlive && MTFAlive)) && !CiAlive && !ScpAlive && !DClassAlive)
-						Plugin.RevealSpies();
-				}, 4);
+				if (Plugin.SpyDict.ContainsKey(ev.Killer.SteamId)) ev.Player.PersonalBroadcast(7, "You were killed by a <b><color=\"green\">CISpy</color></b>!", false);
+				MEC.Timing.RunCoroutine(CheckReveal(ev.Player));
 			}
+		}
+		private IEnumerator<float> CheckReveal(Player player = null)
+		{
+			yield return MEC.Timing.WaitForOneFrame;
+			yield return MEC.Timing.WaitForOneFrame;
+			yield return MEC.Timing.WaitForOneFrame;
+			yield return MEC.Timing.WaitForOneFrame;
+			if(player != null)
+			{
+				if (player.TeamRole.Role.Equals(Role.UNASSIGNED)) yield break;
+				if (Plugin.SpyDict.ContainsKey(player.SteamId))
+					Plugin.SpyDict.Remove(player.SteamId);
+			}
+			int MTFAliveCount = CountRoles(Smod2.API.Team.NINETAILFOX);
+			bool CiAlive = CountRoles(Smod2.API.Team.CHAOS_INSURGENCY) > 0;
+			bool ScpAlive = CountRoles(Smod2.API.Team.SCP) > 0;
+			bool DClassAlive = CountRoles(Smod2.API.Team.CLASSD) > 0;
+			bool ScientistsAlive = CountRoles(Smod2.API.Team.SCIENTIST) > 0;
+			foreach (Player ply in PluginManager.Manager.Server.GetPlayers().Where(x => x.TeamRole.Team == Smod2.API.Team.NINETAILFOX && Plugin.SpyDict.ContainsKey(x.SteamId))) MTFAliveCount--;
+			bool MTFAlive = MTFAliveCount > 0;
+
+			if (CiAlive && !ScientistsAlive && !MTFAlive)
+				Plugin.RevealSpies();
+			if ((ScpAlive || DClassAlive) && !ScientistsAlive && !MTFAlive)
+				Plugin.RevealSpies();
+			if ((ScientistsAlive || MTFAlive) && !CiAlive && !ScpAlive && !DClassAlive)
+				Plugin.RevealSpies();
 		}
 
 		public void OnPlayerHurt(PlayerHurtEvent ev)
@@ -103,30 +107,31 @@ namespace CISpy
 					Plugin.SpyDict.ContainsKey(ev.Player.SteamId))
 				{
 					ev.Damage = 0;
+					ev.Attacker.PersonalClearBroadcasts();
+					ev.Attacker.PersonalBroadcast(5, "You are shooting a <b><color=\"green\">CISpy</color></b>!", false);
+					return;
 				}
 
 				if (Plugin.SpyDict.ContainsKey(ev.Attacker.SteamId) &&
 					(ev.Player.TeamRole.Team == Smod2.API.Team.CLASSD ||
 					ev.Player.TeamRole.Team == Smod2.API.Team.CHAOS_INSURGENCY))
 				{
+					ev.Attacker.PersonalClearBroadcasts();
+					ev.Attacker.PersonalBroadcast(5, "A <b><color=\"green\">CISpy</color></b> can't shoot <b><color=\"green\">CI</color></b> or <b><color=\"orange\">Class-D</color></b>!", false);
 					ev.Damage = 0;
+					return;
 				}
 
 				if (Plugin.SpyDict.ContainsKey(ev.Attacker.SteamId) && Plugin.SpyDict.ContainsKey(ev.Player.SteamId))
 				{
 					ev.Damage = 0;
-					if (!isDisplaySpy)
-					{
-						ev.Attacker.PersonalBroadcast(5, "You are shooting another <b><color=\"green\">CISpy</color></b>!", false);
-						isDisplaySpy = true;
-					}
-					Timing.In(x =>
-					{
-						isDisplaySpy = false;
-					}, 5);
+					ev.Attacker.PersonalClearBroadcasts();
+					ev.Attacker.PersonalBroadcast(5, "You are shooting another <b><color=\"green\">CISpy</color></b>!", false);
+					return;
 				}
 				
-				if (Plugin.SpyDict.ContainsKey(ev.Attacker.SteamId) && !Plugin.SpyDict.ContainsKey(ev.Player.SteamId) && (ev.Player.TeamRole.Team == Smod2.API.Team.NINETAILFOX || ev.Player.TeamRole.Team == Smod2.API.Team.SCIENTIST))
+				if (Plugin.SpyDict.ContainsKey(ev.Attacker.SteamId) && !Plugin.SpyDict.ContainsKey(ev.Player.SteamId)
+					&& (ev.Player.TeamRole.Team == Smod2.API.Team.NINETAILFOX || ev.Player.TeamRole.Team == Smod2.API.Team.SCIENTIST))
 				{
 					if (!Plugin.SpyDict[ev.Attacker.SteamId])
 					{
@@ -138,20 +143,15 @@ namespace CISpy
 					{
 						ev.Player.SetHealth(ev.Player.GetHealth() - (int)ev.Damage);
 					}
+					return;
 				}
 
 				if (Plugin.SpyDict.ContainsKey(ev.Player.SteamId) && ev.Attacker.TeamRole.Team == Smod2.API.Team.CHAOS_INSURGENCY)
 				{
 					ev.Damage = 0;
-					if (!isDisplayFriendly)
-					{
-						ev.Attacker.PersonalBroadcast(5, "You are shooting a <b><color=\"green\">CISpy</color></b>!", false);
-						isDisplayFriendly = true;
-					}
-					Timing.In(x =>
-					{
-						isDisplayFriendly = false;
-					}, 5);
+					ev.Attacker.PersonalClearBroadcasts();
+					ev.Attacker.PersonalBroadcast(5, "You are shooting a <b><color=\"green\">CISpy</color></b>!", false);
+					return;
 				}
 
 				if (Plugin.SpyDict.ContainsKey(ev.Player.SteamId) && (ev.Attacker.TeamRole.Team == Smod2.API.Team.NINETAILFOX || ev.Attacker.TeamRole.Team == Smod2.API.Team.SCIENTIST))
