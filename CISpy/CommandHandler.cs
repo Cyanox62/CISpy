@@ -33,14 +33,14 @@ namespace CISpy
 								if (player == null) return new string[] { $"Couldn't find player: { args[1] }" };
 								if (Plugin.SpyDict.ContainsKey(player.SteamId)) return new string[] { player.Name + " is already a spy." };
 
-								Plugin.MakeSpy(player);
+								MEC.Timing.RunCoroutine(Plugin.MakeSpy(player), MEC.Segment.Update);
 								return new string[] { $"{ player.Name } has been made a spy." };
 							}
 							else
 							{
 								List<Player> PlayerList = PluginManager.Manager.Server.GetPlayers();
 								Player player = PlayerList[Plugin.rand.Next(PlayerList.Count)];
-								Plugin.MakeSpy(player);
+								MEC.Timing.RunCoroutine(Plugin.MakeSpy(player), MEC.Segment.Update);
 								return new string[] { $"No player specified, selecting random player...\n{ player.Name } has been made a spy." };
 							}
 						}

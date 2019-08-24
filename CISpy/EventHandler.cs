@@ -31,7 +31,7 @@ namespace CISpy
 						Guards.Add(player);
 
 					if (Guards.Count > 0)
-						Plugin.MakeSpy(Guards[Plugin.rand.Next(Guards.Count)], 15);
+						MEC.Timing.RunCoroutine(Plugin.MakeSpy(Guards[Plugin.rand.Next(Guards.Count)], 15), MEC.Segment.Update);
 				}
 			}
 		}
@@ -63,7 +63,6 @@ namespace CISpy
 		{
 			if (Plugin.isEnabled)
 			{
-				if (Plugin.SpyDict.ContainsKey(ev.Killer.SteamId)) ev.Player.PersonalBroadcast(7, Plugin.instance.killedBySpy, false);
 				MEC.Timing.RunCoroutine(CheckReveal(ev.Player));
 			}
 		}
@@ -108,11 +107,12 @@ namespace CISpy
 					{
 						Plugin.SpyDict[ev.Attacker.SteamId] = true;
 						ev.Attacker.PersonalBroadcast(10, Plugin.instance.ableToBeKilled.Replace("{ROLE}", ev.Player.TeamRole.Team == Smod2.API.Team.NINETAILFOX ? Plugin.instance.ntf : Plugin.instance.scientist), false);
-						ev.Player.SetHealth(ev.Player.GetHealth() - (int)ev.Damage);
 					}
-					else
+					int health = ev.Player.GetHealth() - (int)ev.Damage;
+					ev.Player.SetHealth(health);
+					if (health >= 0)
 					{
-						ev.Player.SetHealth(ev.Player.GetHealth() - (int)ev.Damage);
+						ev.Player.PersonalBroadcast(7, Plugin.instance.killedBySpy, false);
 					}
 					return;
 				}
