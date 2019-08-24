@@ -39,7 +39,7 @@ namespace CISpy
 		public static readonly string broadcast = "<color=#d0d0d0>You are a <b><color=\"green\">CISpy</color></b>! Check your console by pressing [`] or [~] for more info.</color>";
 		[LangOption]
 		public static readonly string consoleMessage = "You are a Chaos Insurgency Spy! You are immune to MTF for now, but as soon as you damage an MTF," +
-				" your spy immunity will turn off.\n\n" +
+				@" your spy immunity will turn off.\n\n" +
 				"Help Chaos win the round and kill as many MTF and Scientists as you can.";
 		[LangOption]
 		public static readonly string lastCI = "<color=#d0d0d0>Your fellow <color=\"green\">Chaos Insurgency</color> have died, you have been revealed!</color>";
@@ -168,7 +168,7 @@ namespace CISpy
 			}
 			SpyDict.Add(player.SteamId, false);
 			player.PersonalBroadcast(10, broadcast, false);
-			player.SendConsoleMessage(consoleMessage);
+			player.SendConsoleMessage(consoleMessage.Replace(@"\n", Environment.NewLine));
 		}
 
 
