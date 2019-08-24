@@ -16,7 +16,8 @@ namespace CISpy
 	version = "1.0.0",
 	SmodMajor = 3,
 	SmodMinor = 0,
-	SmodRevision = 0
+	SmodRevision = 0,
+	langFile = "cispy"
 	)]
 	public class Plugin : Smod2.Plugin
     {
