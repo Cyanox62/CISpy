@@ -14,7 +14,6 @@ namespace CISpy
 
 			Events.WaitingForPlayersEvent += ev.OnWaitingForPlayers;
 			Events.RoundStartEvent += ev.OnRoundStart;
-			Events.RoundEndEvent += ev.OnRoundEnd;
 			Events.TeamRespawnEvent += ev.OnTeamRespawn;
 			Events.SetClassEvent += ev.OnSetClass;
 			Events.PlayerDeathEvent += ev.OnPlayerDie;
@@ -26,7 +25,6 @@ namespace CISpy
 		{
 			Events.WaitingForPlayersEvent -= ev.OnWaitingForPlayers;
 			Events.RoundStartEvent -= ev.OnRoundStart;
-			Events.RoundEndEvent -= ev.OnRoundEnd;
 			Events.TeamRespawnEvent -= ev.OnTeamRespawn;
 			Events.SetClassEvent -= ev.OnSetClass;
 			Events.PlayerDeathEvent -= ev.OnPlayerDie;
