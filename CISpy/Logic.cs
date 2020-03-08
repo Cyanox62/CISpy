@@ -9,9 +9,9 @@ namespace CISpy
 {
 	partial class EventHandlers
 	{
-		private void MakeSpy(ReferenceHub player)
+		internal static void MakeSpy(ReferenceHub player, bool isVulnerable = false, bool full = true)
 		{
-			if (!Configs.spawnWithGrenade)
+			if (!Configs.spawnWithGrenade && full)
 			{
 				for (int i = player.inventory.items.Count - 1; i >= 0; i--)
 				{
@@ -21,7 +21,7 @@ namespace CISpy
 					}
 				}
 			}
-			spies.Add(player, false);
+			spies.Add(player, isVulnerable);
 			player.Broadcast(10, "<size=60>You are a <b><color=\"green\">CISpy</color></b></size>\nCheck your console by pressing [`] or [~] for more info.", false);
 			player.characterClassManager.TargetConsolePrint(player.scp079PlayerScript.connectionToClient, "You are a Chaos Insurgency Spy! You are immune to MTF for now, but as soon as you damage an MTF, your spy immunity will turn off.\n\nHelp Chaos win the round and kill as many MTF and Scientists as you can.", "yellow");
 		}

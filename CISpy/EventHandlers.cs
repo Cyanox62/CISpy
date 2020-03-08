@@ -9,7 +9,7 @@ namespace CISpy
 {
 	partial class EventHandlers
 	{
-		private Dictionary<ReferenceHub, bool> spies = new Dictionary<ReferenceHub, bool> ();
+		internal static Dictionary<ReferenceHub, bool> spies = new Dictionary<ReferenceHub, bool> ();
 		private List<ReferenceHub> ffPlayers = new List<ReferenceHub>();
 
 		private bool isDisplayFriendly = false;
