@@ -87,7 +87,7 @@ namespace CISpy
 					Log.Debug("SCP-035 not installed, skipping method call...");
 				}
 
-				List<Team> pList = Player.GetHubs().Where(x => !spies.ContainsKey(x)).Where(x => x.queryProcessor.PlayerId != scp035?.queryProcessor.PlayerId).Select(x => x.GetTeam()).ToList();
+				List<Team> pList = Player.GetHubs().Where(x => !spies.ContainsKey(x) && x.queryProcessor.PlayerId != scp035?.queryProcessor.PlayerId).Select(x => x.GetTeam()).ToList();
 
 				if ((!pList.Contains(Team.CHI) && !pList.Contains(Team.CDP)) || 
 				((pList.Contains(Team.CDP) || pList.Contains(Team.CHI)) && !pList.Contains(Team.MTF) && !pList.Contains(Team.RSC)))
@@ -153,7 +153,18 @@ namespace CISpy
 			ReferenceHub target = Player.GetPlayer(ev.Target);
 			if (target == null) return;
 
-			if (spies.ContainsKey(ev.Shooter) && !spies.ContainsKey(target) && (Player.GetTeam(target) == Team.RSC || Player.GetTeam(target) == Team.MTF))
+			ReferenceHub scp035 = null;
+
+			try
+			{
+				scp035 = TryGet035();
+			}
+			catch (Exception x)
+			{
+				Log.Debug("SCP-035 not installed, skipping method call...");
+			}
+
+			if (spies.ContainsKey(ev.Shooter) && !spies.ContainsKey(target) && (Player.GetTeam(target) == Team.RSC || Player.GetTeam(target) == Team.MTF) && target.queryProcessor.PlayerId != scp035?.queryProcessor.PlayerId)
 			{
 				if (!spies[ev.Shooter])
 				{
