@@ -2,7 +2,7 @@
 
 A plugin for SCP:SL that adds a chaos spy into every MTF wave.
 
-Compatible with [Serpents Hand](https://github.com/Cyanox62/SerpentsHand/tree/exiled) and [SCP-035](https://github.com/Cyanox62/scp035/tree/exiled).
+Compatible with [SCP-035](https://github.com/Cyanox62/scp035/tree/exiled).
 
 # Installation
 
