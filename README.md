@@ -8,7 +8,7 @@ Compatible with [Serpents Hand](https://github.com/Cyanox62/SerpentsHand/tree/ex
 
 **[EXILED](https://github.com/galaxy119/EXILED) must be installed for this to work.**
 
-Place the "DCReplace.dll" file in your Plugins folder.
+Place the "CISpy.dll" file in your Plugins folder.
 
 # Configs
 
