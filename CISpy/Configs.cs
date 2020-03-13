@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using EXILED;
+using System.Collections.Generic;
 
 namespace CISpy
 {
@@ -17,7 +18,7 @@ namespace CISpy
 			spyRoles = Plugin.Config.GetIntList("cis_spy_roles");
 			if (spyRoles == null || spyRoles.Count == 0)
 			{
-				spyRoles = new List<int>() { 11, 12, 13 };
+				spyRoles = new List<int>() { 11, 13 };
 			}
 
 			spawnWithGrenade = Plugin.Config.GetBool("cis_spawn_with_grenade", true);

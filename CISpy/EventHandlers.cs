@@ -61,7 +61,7 @@ namespace CISpy
 		{
 			if (spies.ContainsKey(ev.Player))
 			{
-				spies.Remove(ev.Player);
+				Timing.CallDelayed(0.1f, () => spies.Remove(ev.Player));
 			}
 		}
 
@@ -74,27 +74,25 @@ namespace CISpy
 
 			ReferenceHub player = ev.Player;
 
-			Timing.CallDelayed(0.1f, () =>
+			ReferenceHub scp035 = null;
+
+			try
 			{
-				ReferenceHub scp035 = null;
+				scp035 = TryGet035();
+			}
+			catch (Exception x)
+			{
+				Log.Debug("SCP-035 not installed, skipping method call...");
+			}
 
-				try
-				{
-					scp035 = TryGet035();
-				}
-				catch (Exception x)
-				{
-					Log.Debug("SCP-035 not installed, skipping method call...");
-				}
+			int playerid = ev.Player.queryProcessor.PlayerId;
+			List<Team> pList = Player.GetHubs().Where(x => x.queryProcessor.PlayerId != playerid && !spies.ContainsKey(x) && x.queryProcessor.PlayerId != scp035?.queryProcessor.PlayerId).Select(x => x.GetTeam()).ToList();
 
-				List<Team> pList = Player.GetHubs().Where(x => !spies.ContainsKey(x) && x.queryProcessor.PlayerId != scp035?.queryProcessor.PlayerId).Select(x => x.GetTeam()).ToList();
-
-				if ((!pList.Contains(Team.CHI) && !pList.Contains(Team.CDP)) || 
-				((pList.Contains(Team.CDP) || pList.Contains(Team.CHI)) && !pList.Contains(Team.MTF) && !pList.Contains(Team.RSC)))
-				{
-					RevealSpies();
-				}
-			});
+			if ((!pList.Contains(Team.CHI) && !pList.Contains(Team.CDP)) ||
+			((pList.Contains(Team.CDP) || pList.Contains(Team.CHI)) && !pList.Contains(Team.MTF) && !pList.Contains(Team.RSC)))
+			{
+				RevealSpies();
+			}
 		}
 
 		public void OnPlayerHurt(ref PlayerHurtEvent ev)
