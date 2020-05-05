@@ -72,8 +72,7 @@ namespace CISpy
 				spies.Remove(ev.Player);
 			}
 
-			ReferenceHub player = ev.Player;
-
+			//ReferenceHub player = ev.Player;
 			ReferenceHub scp035 = null;
 
 			try
@@ -85,7 +84,7 @@ namespace CISpy
 				Log.Debug("SCP-035 not installed, skipping method call...");
 			}
 
-			int playerid = ev.Player.queryProcessor.PlayerId;
+			/*int playerid = ev.Player.queryProcessor.PlayerId;
 			List<Team> pList = Player.GetHubs().Where(x => x.queryProcessor.PlayerId != playerid && !spies.ContainsKey(x) && x.queryProcessor.PlayerId != scp035?.queryProcessor.PlayerId).Select(x => x.GetTeam()).ToList();
 
 			if ((!pList.Contains(Team.CHI) && !pList.Contains(Team.CDP)) ||
@@ -93,6 +92,31 @@ namespace CISpy
 			{
 				RevealSpies();
 			}
+
+			if ((pList.Contains(Team.CHI) || (pList.Contains(Team.CHI) && pList.Contains(Team.SCP)) || (pList.Contains(Team.CHI) && pList.Contains(Team.CDP)) && !pList.Contains(Team.RSC) && !pList.Contains(Team.MTF))
+				RevealSpies();
+			if ((pList.Contains(Team.SCP) || pList.Contains(Team.CDP)) && !pList.Contains(Team.RSC) && !pList.Contains(Team.MTF))
+				RevealSpies();
+			if ((pList.Contains(Team.RSC) || pList.Contains(Team.MTF) || (pList.Contains(Team.RSC) && pList.Contains(Team.MTF))) && !pList.Contains(Team.CHI) && !pList.Contains(Team.SCP) && !pList.Contains(Team.CDP))
+				RevealSpies();*/
+			List<ReferenceHub> pList = Player.GetHubs().Where(x => x.queryProcessor.PlayerId != scp035?.queryProcessor.PlayerId).ToList();
+			Timing.CallDelayed(0.1f, () =>
+			{
+				int MTFAliveCount = CountRoles(Team.MTF, pList);
+				bool CiAlive = CountRoles(Team.CHI, pList) > 0;
+				bool ScpAlive = CountRoles(Team.SCP, pList) > 0 + (scp035 != null ? 1 : 0);
+				bool DClassAlive = CountRoles(Team.CDP, pList) > 0;
+				bool ScientistsAlive = CountRoles(Team.RSC, pList) > 0;
+				foreach (ReferenceHub player in pList.Where(x => x.GetTeam() == Team.MTF && spies.ContainsKey(x))) MTFAliveCount--;
+				bool MTFAlive = MTFAliveCount > 0;
+
+				if ((CiAlive || (CiAlive && ScpAlive) || (CiAlive && DClassAlive)) && !ScientistsAlive && !MTFAlive)
+					RevealSpies();
+				if ((ScpAlive || DClassAlive) && !ScientistsAlive && !MTFAlive)
+					RevealSpies();
+				if ((ScientistsAlive || MTFAlive || (ScientistsAlive && MTFAlive)) && !CiAlive && !ScpAlive && !DClassAlive)
+					RevealSpies();
+			});
 		}
 
 		public void OnPlayerHurt(ref PlayerHurtEvent ev)

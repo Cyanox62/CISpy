@@ -3,6 +3,7 @@ using EXILED.Extensions;
 using MEC;
 using scp035.API;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace CISpy
@@ -69,6 +70,20 @@ namespace CISpy
 		{
 			player.weaponManager.NetworkfriendlyFire = false;
 			ffPlayers.Remove(player);
+		}
+
+		private int CountRoles(RoleType role, List<ReferenceHub> pList)
+		{
+			int count = 0;
+			foreach (ReferenceHub pl in pList) if (pl.GetRole() == role) count++;
+			return count;
+		}
+
+		private int CountRoles(Team team, List<ReferenceHub> pList)
+		{
+			int count = 0;
+			foreach (ReferenceHub pl in pList) if (pl.GetTeam() == team) count++;
+			return count;
 		}
 	}
 }
