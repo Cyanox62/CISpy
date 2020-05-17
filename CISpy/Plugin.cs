@@ -19,6 +19,7 @@ namespace CISpy
 			Events.PlayerDeathEvent += ev.OnPlayerDie;
 			Events.PlayerHurtEvent += ev.OnPlayerHurt;
 			Events.ShootEvent += ev.OnShoot;
+			Events.CheckRoundEndEvent += ev.OnCheckRoundEnd;
 		}
 
 		public override void OnDisable() 
@@ -30,6 +31,7 @@ namespace CISpy
 			Events.PlayerDeathEvent -= ev.OnPlayerDie;
 			Events.PlayerHurtEvent -= ev.OnPlayerHurt;
 			Events.ShootEvent -= ev.OnShoot;
+			Events.CheckRoundEndEvent -= ev.OnCheckRoundEnd;
 
 			ev = null;
 		}

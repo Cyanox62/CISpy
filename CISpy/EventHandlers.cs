@@ -13,6 +13,7 @@ namespace CISpy
 		private List<ReferenceHub> ffPlayers = new List<ReferenceHub>();
 
 		private bool isDisplayFriendly = false;
+		private bool haltRound = false;
 		//private bool isDisplaySpy = false;
 
 		private Random rand = new Random();
@@ -24,6 +25,7 @@ namespace CISpy
 
 		public void OnRoundStart()
 		{
+			haltRound = false;
 			spies.Clear();
 			ffPlayers.Clear();
 			if (rand.Next(1, 101) <= Configs.guardSpawnChance)
@@ -65,6 +67,11 @@ namespace CISpy
 			}
 		}
 
+		public void OnCheckRoundEnd(ref CheckRoundEndEvent ev)
+		{
+			ev.Allow = !haltRound;
+		}
+
 		public void OnPlayerDie(ref PlayerDeathEvent ev)
 		{
 			if (spies.ContainsKey(ev.Player))
@@ -100,6 +107,7 @@ namespace CISpy
 			if ((pList.Contains(Team.RSC) || pList.Contains(Team.MTF) || (pList.Contains(Team.RSC) && pList.Contains(Team.MTF))) && !pList.Contains(Team.CHI) && !pList.Contains(Team.SCP) && !pList.Contains(Team.CDP))
 				RevealSpies();*/
 			List<ReferenceHub> pList = Player.GetHubs().Where(x => x.queryProcessor.PlayerId != scp035?.queryProcessor.PlayerId).ToList();
+			haltRound = true;
 			Timing.CallDelayed(0.1f, () =>
 			{
 				int MTFAliveCount = CountRoles(Team.MTF, pList);
@@ -116,6 +124,7 @@ namespace CISpy
 					RevealSpies();
 				if ((ScientistsAlive || MTFAlive || (ScientistsAlive && MTFAlive)) && !CiAlive && !ScpAlive && !DClassAlive)
 					RevealSpies();
+				haltRound = false;
 			});
 		}
 
