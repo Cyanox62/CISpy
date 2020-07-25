@@ -1,36 +1,29 @@
-﻿using EXILED;
-using EXILED.Extensions;
+﻿using Exiled.API.Features;
 using MEC;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Exiled.Events.EventArgs;
 
 namespace CISpy
 {
 	partial class EventHandlers
 	{
-		internal static Dictionary<ReferenceHub, bool> spies = new Dictionary<ReferenceHub, bool> ();
-		private List<ReferenceHub> ffPlayers = new List<ReferenceHub>();
+		internal static Dictionary<Player, bool> spies = new Dictionary<Player, bool> ();
+		private List<Player> ffPlayers = new List<Player>();
 
 		private bool isDisplayFriendly = false;
-		private bool haltRound = false;
 		//private bool isDisplaySpy = false;
 
 		private Random rand = new Random();
 
-		public void OnWaitingForPlayers()
-		{
-			Configs.ReloadConfigs();
-		}
-
 		public void OnRoundStart()
 		{
-			haltRound = false;
 			spies.Clear();
 			ffPlayers.Clear();
-			if (rand.Next(1, 101) <= Configs.guardSpawnChance)
+			if (rand.Next(1, 101) <= CISpy.instance.Config.GuardSpawnChance)
 			{
-				ReferenceHub player = Player.GetHubs().FirstOrDefault(x => x.GetRole() == RoleType.FacilityGuard);
+				Player player = Player.List.FirstOrDefault(x => x.Role == RoleType.FacilityGuard);
 				if (player != null)
 				{
 					MakeSpy(player);
@@ -38,18 +31,17 @@ namespace CISpy
 			}
 		}
 
-		public void OnTeamRespawn(ref TeamRespawnEvent ev)
+		public void OnTeamRespawn(RespawningTeamEventArgs ev)
 		{
-			if (!ev.IsChaos && rand.Next(1, 101) <= Configs.spawnChance && ev.ToRespawn.Count >= Configs.minimumSquadSize)
+			if (ev.NextKnownTeam == Respawning.SpawnableTeamType.NineTailedFox && rand.Next(1, 101) <= CISpy.instance.Config.SpawnChance && ev.Players.Count >= CISpy.instance.Config.MinimumSquadSize)
 			{
-				List<ReferenceHub> respawn = new List<ReferenceHub>(ev.ToRespawn);
+				List<Player> respawn = new List<Player>(ev.Players);
 				Timing.CallDelayed(0.1f, () =>
 				{
-					Log.Warn(Configs.spyRoles.Count.ToString());
-					List<ReferenceHub> roleList = respawn.Where(x => Configs.spyRoles.Contains((int)x.GetRole())).ToList();
+					List<Player> roleList = respawn.Where(x => CISpy.instance.Config.SpyRoles.Contains((int)x.Role)).ToList();
 					if (roleList.Count > 0)
 					{
-						ReferenceHub player = roleList[rand.Next(roleList.Count)];
+						Player player = roleList[rand.Next(roleList.Count)];
 						if (player != null)
 						{
 							MakeSpy(player);
@@ -59,7 +51,7 @@ namespace CISpy
 			}
 		}
 
-		public void OnSetClass(SetClassEvent ev)
+		public void OnSetClass(ChangingRoleEventArgs ev)
 		{
 			if (spies.ContainsKey(ev.Player))
 			{
@@ -67,75 +59,29 @@ namespace CISpy
 			}
 		}
 
-		public void OnCheckRoundEnd(ref CheckRoundEndEvent ev)
+		public void OnPlayerDie(DiedEventArgs ev)
 		{
-			ev.Allow = !haltRound;
+			if (spies.ContainsKey(ev.Target))
+			{
+				spies.Remove(ev.Target);
+			}
+
+			CheckSpies(ev.Target);
 		}
 
-		public void OnPlayerDie(ref PlayerDeathEvent ev)
+		public void OnPlayerLeave(LeftEventArgs ev)
 		{
-			if (spies.ContainsKey(ev.Player))
-			{
-				spies.Remove(ev.Player);
-			}
-
-			//ReferenceHub player = ev.Player;
-			ReferenceHub scp035 = null;
-
-			try
-			{
-				scp035 = TryGet035();
-			}
-			catch (Exception x)
-			{
-				Log.Debug("SCP-035 not installed, skipping method call...");
-			}
-
-			/*int playerid = ev.Player.queryProcessor.PlayerId;
-			List<Team> pList = Player.GetHubs().Where(x => x.queryProcessor.PlayerId != playerid && !spies.ContainsKey(x) && x.queryProcessor.PlayerId != scp035?.queryProcessor.PlayerId).Select(x => x.GetTeam()).ToList();
-
-			if ((!pList.Contains(Team.CHI) && !pList.Contains(Team.CDP)) ||
-			((pList.Contains(Team.CDP) || pList.Contains(Team.CHI)) && !pList.Contains(Team.MTF) && !pList.Contains(Team.RSC)))
-			{
-				RevealSpies();
-			}
-
-			if ((pList.Contains(Team.CHI) || (pList.Contains(Team.CHI) && pList.Contains(Team.SCP)) || (pList.Contains(Team.CHI) && pList.Contains(Team.CDP)) && !pList.Contains(Team.RSC) && !pList.Contains(Team.MTF))
-				RevealSpies();
-			if ((pList.Contains(Team.SCP) || pList.Contains(Team.CDP)) && !pList.Contains(Team.RSC) && !pList.Contains(Team.MTF))
-				RevealSpies();
-			if ((pList.Contains(Team.RSC) || pList.Contains(Team.MTF) || (pList.Contains(Team.RSC) && pList.Contains(Team.MTF))) && !pList.Contains(Team.CHI) && !pList.Contains(Team.SCP) && !pList.Contains(Team.CDP))
-				RevealSpies();*/
-			List<ReferenceHub> pList = Player.GetHubs().Where(x => x.queryProcessor.PlayerId != scp035?.queryProcessor.PlayerId).ToList();
-			haltRound = true;
-			Timing.CallDelayed(0.1f, () =>
-			{
-				int MTFAliveCount = CountRoles(Team.MTF, pList);
-				bool CiAlive = CountRoles(Team.CHI, pList) > 0;
-				bool ScpAlive = CountRoles(Team.SCP, pList) > 0 + (scp035 != null ? 1 : 0);
-				bool DClassAlive = CountRoles(Team.CDP, pList) > 0;
-				bool ScientistsAlive = CountRoles(Team.RSC, pList) > 0;
-				foreach (ReferenceHub player in pList.Where(x => x.GetTeam() == Team.MTF && spies.ContainsKey(x))) MTFAliveCount--;
-				bool MTFAlive = MTFAliveCount > 0;
-
-				if ((CiAlive || (CiAlive && ScpAlive) || (CiAlive && DClassAlive)) && !ScientistsAlive && !MTFAlive)
-					RevealSpies();
-				if ((ScpAlive || DClassAlive) && !ScientistsAlive && !MTFAlive)
-					RevealSpies();
-				if ((ScientistsAlive || MTFAlive || (ScientistsAlive && MTFAlive)) && !CiAlive && !ScpAlive && !DClassAlive)
-					RevealSpies();
-				haltRound = false;
-			});
+			CheckSpies(ev.Player);
 		}
 
-		public void OnPlayerHurt(ref PlayerHurtEvent ev)
+		public void OnPlayerHurt(HurtingEventArgs ev)
 		{
 			if (ffPlayers.Contains(ev.Attacker))
 			{
 				RemoveFF(ev.Attacker);
 			}
 
-			ReferenceHub scp035 = null;
+			Player scp035 = null;
 
 			try
 			{
@@ -146,11 +92,11 @@ namespace CISpy
 				Log.Debug("SCP-035 not installed, skipping method call...");
 			}
 
-			if (spies.ContainsKey(ev.Player) && !spies.ContainsKey(ev.Attacker) && ev.Player.queryProcessor.PlayerId != ev.Attacker.queryProcessor.PlayerId && (ev.Attacker.GetTeam() == Team.CHI || ev.Attacker.GetTeam() == Team.CDP))
+			if (spies.ContainsKey(ev.Target) && !spies.ContainsKey(ev.Attacker) && ev.Target.Id != ev.Attacker.Id && (ev.Attacker.Team == Team.CHI || ev.Attacker.Team == Team.CDP))
 			{
 				if (!isDisplayFriendly)
 				{
-					ev.Attacker.Broadcast(3, "You are shooting a <b><color=\"green\">CISpy!</color></b>", false);
+					ev.Attacker.Broadcast(3, "You are shooting a <b><color=\"green\">CISpy!</color></b>");
 					isDisplayFriendly = true;
 				}
 				Timing.CallDelayed(3f, () =>
@@ -159,7 +105,7 @@ namespace CISpy
 				});
 				ev.Amount = 0;
 			}
-			else if (!spies.ContainsKey(ev.Player) && spies.ContainsKey(ev.Attacker) && (ev.Player.GetTeam() == Team.CHI || ev.Player.GetTeam() == Team.CDP) && ev.Player.queryProcessor.PlayerId != scp035?.queryProcessor.PlayerId)
+			else if (!spies.ContainsKey(ev.Target) && spies.ContainsKey(ev.Attacker) && (ev.Target.Team == Team.CHI || ev.Target.Team == Team.CDP) && ev.Target.Id != scp035?.Id)
 			{
 				ev.Amount = 0;
 			}
@@ -178,13 +124,13 @@ namespace CISpy
 			}*/ 
 		}
 
-		public void OnShoot(ref ShootEvent ev)
+		public void OnShoot(ShootingEventArgs ev)
 		{
 			if (ev.Target == null) return;
-			ReferenceHub target = Player.GetPlayer(ev.Target);
+			Player target = Player.Get(ev.Target);
 			if (target == null) return;
 
-			ReferenceHub scp035 = null;
+			Player scp035 = null;
 
 			try
 			{
@@ -195,16 +141,16 @@ namespace CISpy
 				Log.Debug("SCP-035 not installed, skipping method call...");
 			}
 
-			if (spies.ContainsKey(ev.Shooter) && !spies.ContainsKey(target) && (Player.GetTeam(target) == Team.RSC || Player.GetTeam(target) == Team.MTF) && target.queryProcessor.PlayerId != scp035?.queryProcessor.PlayerId)
+			if (spies.ContainsKey(ev.Shooter) && !spies.ContainsKey(target) && (target.Team == Team.RSC || target.Team == Team.MTF) && target.Id != scp035?.Id)
 			{
 				if (!spies[ev.Shooter])
 				{
 					spies[ev.Shooter] = true;
-					ev.Shooter.Broadcast(10, $"You have attacked a {(target.GetTeam() == Team.MTF ? "<color=#00b0fc>Nine Tailed Fox" : "<color=#fcff8d>Scientist")}</color>, you are now able to be killed by <color=#00b0fc>Nine Tailed Fox</color> and <color=#fcff8d>Scientists</color>.", false);
+					ev.Shooter.Broadcast(10, $"You have attacked a {(target.Team == Team.MTF ? "<color=#00b0fc>Nine Tailed Fox" : "<color=#fcff8d>Scientist")}</color>, you are now able to be killed by <color=#00b0fc>Nine Tailed Fox</color> and <color=#fcff8d>Scientists</color>.");
 				}
 				GrantFF(ev.Shooter);
 			}
-			else if (spies.ContainsKey(target) && !spies.ContainsKey(ev.Shooter) && (ev.Shooter.GetTeam() == Team.MTF || ev.Shooter.GetTeam() == Team.RSC))
+			else if (spies.ContainsKey(target) && !spies.ContainsKey(ev.Shooter) && (ev.Shooter.Team == Team.MTF || ev.Shooter.Team == Team.RSC))
 			{
 				if (spies[target])
 				{

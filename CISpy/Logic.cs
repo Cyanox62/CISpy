@@ -1,7 +1,8 @@
-﻿using EXILED;
-using EXILED.Extensions;
+﻿using Exiled.API.Enums;
+using Exiled.API.Features;
 using MEC;
 using scp035.API;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -10,80 +11,121 @@ namespace CISpy
 {
 	partial class EventHandlers
 	{
-		internal static void MakeSpy(ReferenceHub player, bool isVulnerable = false, bool full = true)
+		internal static void MakeSpy(Player player, bool isVulnerable = false, bool full = true)
 		{
-			if (!Configs.spawnWithGrenade && full)
+			if (!CISpy.instance.Config.SpawnWithGrenade && full)
 			{
-				for (int i = player.inventory.items.Count - 1; i >= 0; i--)
+				for (int i = player.Inventory.items.Count - 1; i >= 0; i--)
 				{
-					if (player.inventory.items[i].id == ItemType.GrenadeFrag)
+					if (player.Inventory.items[i].id == ItemType.GrenadeFrag)
 					{
-						player.inventory.items.RemoveAt(i);
+						player.Inventory.items.RemoveAt(i);
 					}
 				}
 			}
 			spies.Add(player, isVulnerable);
-			player.Broadcast(10, "<size=60>You are a <b><color=\"green\">CISpy</color></b></size>\nCheck your console by pressing [`] or [~] for more info.", false);
-			player.characterClassManager.TargetConsolePrint(player.scp079PlayerScript.connectionToClient, "You are a Chaos Insurgency Spy! You are immune to MTF for now, but as soon as you damage an MTF, your spy immunity will turn off.\n\nHelp Chaos win the round and kill as many MTF and Scientists as you can.", "yellow");
+			player.Broadcast(10, "<size=60>You are a <b><color=\"green\">CISpy</color></b></size>\nCheck your console by pressing [`] or [~] for more info.");
+			player.ReferenceHub.characterClassManager.TargetConsolePrint(player.ReferenceHub.scp079PlayerScript.connectionToClient, "You are a Chaos Insurgency Spy! You are immune to MTF for now, but as soon as you damage an MTF, your spy immunity will turn off.\n\nHelp Chaos win the round and kill as many MTF and Scientists as you can.", "yellow");
 		}
 
-		private ReferenceHub TryGet035()
+		private Player TryGet035()
 		{
 			return Scp035Data.GetScp035();
 		}
 
 		private void RevealSpies()
 		{
-			foreach (KeyValuePair<ReferenceHub, bool> spy in spies)
+			foreach (KeyValuePair<Player, bool> spy in spies)
 			{
 				Inventory.SyncListItemInfo items = new Inventory.SyncListItemInfo();
-				foreach (var item in spy.Key.inventory.items) items.Add(item);
-				Vector3 pos = spy.Key.transform.position;
-				Quaternion rot = spy.Key.transform.rotation;
-				int health = (int)spy.Key.playerStats.health;
-				string ammo = spy.Key.ammoBox.Networkamount;
+				foreach (var item in spy.Key.Inventory.items) items.Add(item);
+				Vector3 pos = spy.Key.Position;
+				Vector3 rot = spy.Key.Rotation;
+				int health = (int)spy.Key.Health;
+				uint ammo1 = spy.Key.GetAmmo(AmmoType.Nato556);
+				uint ammo2 = spy.Key.GetAmmo(AmmoType.Nato762);
+				uint ammo3 = spy.Key.GetAmmo(AmmoType.Nato9);
 
 				spy.Key.SetRole(RoleType.ChaosInsurgency);
 
 				Timing.CallDelayed(0.3f, () =>
 				{
-					spy.Key.plyMovementSync.OverridePosition(pos, 0f);
-					spy.Key.SetRotation(rot.x, rot.y);
-					spy.Key.inventory.items.Clear();
-					foreach (var item in items) spy.Key.inventory.AddNewItem(item.id);
-					spy.Key.playerStats.health = health;
-					spy.Key.ammoBox.Networkamount = ammo;
+					spy.Key.Position = pos;
+					spy.Key.Rotation = rot;
+					spy.Key.Inventory.items.Clear();
+					foreach (var item in items) spy.Key.Inventory.AddNewItem(item.id);
+					spy.Key.Health = health;
+					spy.Key.SetAmmo(AmmoType.Nato556, ammo1);
+					spy.Key.SetAmmo(AmmoType.Nato762, ammo2);
+					spy.Key.SetAmmo(AmmoType.Nato9, ammo3);
 				});
 
-				spy.Key.Broadcast(10, "Your fellow <color=\"green\">Chaos Insurgency</color> have died.\nYou have been revealed!", false);
+				spy.Key.Broadcast(10, "Your fellow <color=\"green\">Chaos Insurgency</color> have died.\nYou have been revealed!");
 			}
 			spies.Clear();
 		}
 
-		private void GrantFF(ReferenceHub player)
+		private void GrantFF(Player player)
 		{
-			player.weaponManager.NetworkfriendlyFire = true;
+			player.IsFriendlyFireEnabled = true;
 			ffPlayers.Add(player);
 		}
 
-		private void RemoveFF(ReferenceHub player)
+		private void RemoveFF(Player player)
 		{
-			player.weaponManager.NetworkfriendlyFire = false;
+			player.IsFriendlyFireEnabled = false;
 			ffPlayers.Remove(player);
 		}
 
-		private int CountRoles(RoleType role, List<ReferenceHub> pList)
+		private int CountRoles(RoleType role, List<Player> pList)
 		{
 			int count = 0;
-			foreach (ReferenceHub pl in pList) if (pl.GetRole() == role) count++;
+			foreach (Player pl in pList) if (pl.Role == role) count++;
 			return count;
 		}
 
-		private int CountRoles(Team team, List<ReferenceHub> pList)
+		private int CountRoles(Team team, List<Player> pList)
 		{
 			int count = 0;
-			foreach (ReferenceHub pl in pList) if (pl.GetTeam() == team) count++;
+			foreach (Player pl in pList) if (pl.Team == team) count++;
 			return count;
+		}
+
+		private void CheckSpies(Player exclude = null)
+		{
+			Player scp035 = null;
+
+			try
+			{
+				scp035 = TryGet035();
+			}
+			catch (Exception x)
+			{
+				Log.Debug("SCP-035 not installed, skipping method call...");
+			}
+
+			int playerid = -1;
+			if (exclude != null) playerid = exclude.Id;
+			List<Player> pList = Player.List.Where(x =>
+			x.Id != playerid &&
+			x.Id != scp035?.Id &&
+			!spies.ContainsKey(x)).ToList();
+
+			bool CiAlive = CountRoles(Team.CHI, pList) > 0;
+			bool ScpAlive = CountRoles(Team.SCP, pList) > 0 + (scp035 != null ? 1 : 0);
+			bool DClassAlive = CountRoles(Team.CDP, pList) > 0;
+			bool ScientistsAlive = CountRoles(Team.RSC, pList) > 0;
+			bool MTFAlive = CountRoles(Team.MTF, pList) > 0;
+
+			if
+			(
+				((CiAlive || (CiAlive && ScpAlive) || (CiAlive && DClassAlive)) && !ScientistsAlive && !MTFAlive) ||
+				((ScpAlive || DClassAlive) && !ScientistsAlive && !MTFAlive) ||
+				((ScientistsAlive || MTFAlive || (ScientistsAlive && MTFAlive)) && !CiAlive && !ScpAlive && !DClassAlive)
+			)
+			{
+				RevealSpies();
+			}
 		}
 	}
 }
