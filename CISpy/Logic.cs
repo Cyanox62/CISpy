@@ -24,7 +24,7 @@ namespace CISpy
 				}
 			}
 			spies.Add(player, isVulnerable);
-			player.Broadcast(10, "<size=60>You are a <b><color=\"green\">CISpy</color></b></size>\nCheck your console by pressing [`] or [~] for more info.");
+			player.Broadcast(10, "<i><size=60>You are a <b><color=\"green\">CISpy</color></b></size>\nCheck your console by pressing [`] or [~] for more info.</i>");
 			player.ReferenceHub.characterClassManager.TargetConsolePrint(player.ReferenceHub.scp079PlayerScript.connectionToClient, "You are a Chaos Insurgency Spy! You are immune to MTF for now, but as soon as you damage an MTF, your spy immunity will turn off.\n\nHelp Chaos win the round and kill as many MTF and Scientists as you can.", "yellow");
 		}
 
@@ -42,9 +42,9 @@ namespace CISpy
 				Vector3 pos = spy.Key.Position;
 				Vector3 rot = spy.Key.Rotation;
 				int health = (int)spy.Key.Health;
-				uint ammo1 = spy.Key.GetAmmo(AmmoType.Nato556);
-				uint ammo2 = spy.Key.GetAmmo(AmmoType.Nato762);
-				uint ammo3 = spy.Key.GetAmmo(AmmoType.Nato9);
+				uint ammo1 = spy.Key.Ammo[(int)AmmoType.Nato556];
+				uint ammo2 = spy.Key.Ammo[(int)AmmoType.Nato762];
+				uint ammo3 = spy.Key.Ammo[(int)AmmoType.Nato9];
 
 				spy.Key.SetRole(RoleType.ChaosInsurgency);
 
@@ -55,12 +55,12 @@ namespace CISpy
 					spy.Key.Inventory.items.Clear();
 					foreach (var item in items) spy.Key.Inventory.AddNewItem(item.id);
 					spy.Key.Health = health;
-					spy.Key.SetAmmo(AmmoType.Nato556, ammo1);
-					spy.Key.SetAmmo(AmmoType.Nato762, ammo2);
-					spy.Key.SetAmmo(AmmoType.Nato9, ammo3);
+					spy.Key.Ammo[(int)AmmoType.Nato556] = ammo1;
+					spy.Key.Ammo[(int)AmmoType.Nato762] = ammo2;
+					spy.Key.Ammo[(int)AmmoType.Nato9] = ammo3;
 				});
 
-				spy.Key.Broadcast(10, "Your fellow <color=\"green\">Chaos Insurgency</color> have died.\nYou have been revealed!");
+				spy.Key.Broadcast(10, "<i>Your fellow <color=\"green\">Chaos Insurgency</color> have died.\nYou have been revealed!</i>");
 			}
 			spies.Clear();
 		}
@@ -75,13 +75,6 @@ namespace CISpy
 		{
 			player.IsFriendlyFireEnabled = false;
 			ffPlayers.Remove(player);
-		}
-
-		private int CountRoles(RoleType role, List<Player> pList)
-		{
-			int count = 0;
-			foreach (Player pl in pList) if (pl.Role == role) count++;
-			return count;
 		}
 
 		private int CountRoles(Team team, List<Player> pList)

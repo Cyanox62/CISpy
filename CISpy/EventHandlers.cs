@@ -74,6 +74,15 @@ namespace CISpy
 			CheckSpies(ev.Player);
 		}
 
+		public void OnHandcuffing(HandcuffingEventArgs ev)
+		{
+			if ((spies.ContainsKey(ev.Target) && ev.Cuffer.Team == Team.CHI) ||
+				(spies.ContainsKey(ev.Cuffer) && ev.Target.Team == Team.CHI))
+			{
+				ev.IsAllowed = false;
+			}
+		}
+
 		public void OnPlayerHurt(HurtingEventArgs ev)
 		{
 			if (ffPlayers.Contains(ev.Attacker))
@@ -92,11 +101,11 @@ namespace CISpy
 				Log.Debug("SCP-035 not installed, skipping method call...");
 			}
 
-			if (spies.ContainsKey(ev.Target) && !spies.ContainsKey(ev.Attacker) && ev.Target.Id != ev.Attacker.Id && (ev.Attacker.Team == Team.CHI || ev.Attacker.Team == Team.CDP))
+			if (spies.ContainsKey(ev.Target) && !spies.ContainsKey(ev.Attacker) && ev.Target.Id != ev.Attacker.Id && (ev.Attacker.Team == Team.CHI || ev.Attacker.Team == Team.CDP) &&  ev.Attacker.Id != scp035?.Id)
 			{
 				if (!isDisplayFriendly)
 				{
-					ev.Attacker.Broadcast(3, "You are shooting a <b><color=\"green\">CISpy!</color></b>");
+					ev.Attacker.Broadcast(3, "<i>You are shooting a <b><color=\"green\">CISpy!</color></b></i>");
 					isDisplayFriendly = true;
 				}
 				Timing.CallDelayed(3f, () =>
@@ -132,13 +141,9 @@ namespace CISpy
 
 			Player scp035 = null;
 
-			try
+			if (CISpy.isScp035)
 			{
 				scp035 = TryGet035();
-			}
-			catch (Exception x)
-			{
-				Log.Debug("SCP-035 not installed, skipping method call...");
 			}
 
 			if (spies.ContainsKey(ev.Shooter) && !spies.ContainsKey(target) && (target.Team == Team.RSC || target.Team == Team.MTF) && target.Id != scp035?.Id)
@@ -146,7 +151,7 @@ namespace CISpy
 				if (!spies[ev.Shooter])
 				{
 					spies[ev.Shooter] = true;
-					ev.Shooter.Broadcast(10, $"You have attacked a {(target.Team == Team.MTF ? "<color=#00b0fc>Nine Tailed Fox" : "<color=#fcff8d>Scientist")}</color>, you are now able to be killed by <color=#00b0fc>Nine Tailed Fox</color> and <color=#fcff8d>Scientists</color>.");
+					ev.Shooter.Broadcast(10, $"<i>You have attacked a {(target.Team == Team.MTF ? "<color=#00b0fc>Nine Tailed Fox" : "<color=#fcff8d>Scientist")}</color>, you are now able to be killed by <color=#00b0fc>Nine Tailed Fox</color> and <color=#fcff8d>Scientists</color>.</i>");
 				}
 				GrantFF(ev.Shooter);
 			}
