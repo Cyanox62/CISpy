@@ -16,6 +16,7 @@ namespace CISpy
 
 			if (!Config.IsEnabled) return;
 			instance = this;
+			Check035();
 			ev = new EventHandlers();
 
 			Exiled.Events.Handlers.Server.RoundStarted += ev.OnRoundStart;
