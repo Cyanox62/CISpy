@@ -27,6 +27,7 @@ namespace CISpy
 			Exiled.Events.Handlers.Player.Shooting += ev.OnShoot;
 			Exiled.Events.Handlers.Player.Left += ev.OnPlayerLeave;
 			Exiled.Events.Handlers.Player.Handcuffing += ev.OnHandcuffing;
+			Exiled.Events.Handlers.Player.Escaping += ev.OnEscaping;
 		}
 
 		public override void OnDisabled() 
@@ -41,6 +42,7 @@ namespace CISpy
 			Exiled.Events.Handlers.Player.Shooting -= ev.OnShoot;
 			Exiled.Events.Handlers.Player.Left -= ev.OnPlayerLeave;
 			Exiled.Events.Handlers.Player.Handcuffing -= ev.OnHandcuffing;
+			Exiled.Events.Handlers.Player.Escaping -= ev.OnEscaping;
 
 			ev = null;
 		}
