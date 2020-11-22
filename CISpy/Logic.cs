@@ -23,6 +23,7 @@ namespace CISpy
 					}
 				}
 			}
+			player.Inventory.AddNewItem(ItemType.KeycardChaosInsurgency);
 			spies.Add(player, isVulnerable);
 			player.Broadcast(10, "<i><size=60>You are a <b><color=\"green\">CISpy</color></b></size>\nCheck your console by pressing [`] or [~] for more info.</i>");
 			player.ReferenceHub.characterClassManager.TargetConsolePrint(player.ReferenceHub.scp079PlayerScript.connectionToClient, "You are a Chaos Insurgency Spy! You are immune to MTF for now, but as soon as you damage an MTF, your spy immunity will turn off.\n\nHelp Chaos win the round and kill as many MTF and Scientists as you can.", "yellow");

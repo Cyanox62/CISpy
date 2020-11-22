@@ -53,11 +53,13 @@ namespace CISpy
 
 		public void OnEscaping(EscapingEventArgs ev)
 		{
-			if (ev.Player.IsCuffed && spies.ContainsKey(Player.Get(ev.Player.CufferId)))
+			if (ev.Player.Role == RoleType.ClassD && ev.Player.IsCuffed && spies.ContainsKey(Player.Get(ev.Player.CufferId)))
 			{
-				Timing.CallDelayed(0.2f, () =>
+				Timing.CallDelayed(0.1f, () =>
 				{
 					MakeSpy(ev.Player);
+					RoundSummary.escaped_scientists--;
+					RoundSummary.escaped_ds++;
 				});
 			}
 		}
