@@ -51,6 +51,17 @@ namespace CISpy
 			}
 		}
 
+		public void OnEscaping(EscapingEventArgs ev)
+		{
+			if (ev.Player.IsCuffed && spies.ContainsKey(Player.Get(ev.Player.CufferId)))
+			{
+				Timing.CallDelayed(0.2f, () =>
+				{
+					MakeSpy(ev.Player);
+				});
+			}
+		}
+
 		public void OnSetClass(ChangingRoleEventArgs ev)
 		{
 			if (spies.ContainsKey(ev.Player))
