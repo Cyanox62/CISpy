@@ -26,7 +26,10 @@ namespace CISpy
 				Player player = Player.List.FirstOrDefault(x => x.Role == RoleType.FacilityGuard);
 				if (player != null)
 				{
-					MakeSpy(player);
+					Timing.CallDelayed(0.8f, () =>
+					{
+						MakeSpy(player);
+					});
 				}
 			}
 		}
@@ -38,13 +41,16 @@ namespace CISpy
 				List<Player> respawn = new List<Player>(ev.Players);
 				Timing.CallDelayed(0.1f, () =>
 				{
-					List<Player> roleList = respawn.Where(x => CISpy.instance.Config.SpyRoles.Contains((int)x.Role)).ToList();
+					List<Player> roleList = respawn.Where(x => CISpy.instance.Config.SpyRoles.Contains(x.Role)).ToList();
 					if (roleList.Count > 0)
 					{
 						Player player = roleList[rand.Next(roleList.Count)];
 						if (player != null)
 						{
-							MakeSpy(player);
+							Timing.CallDelayed(0.8f, () =>
+							{
+								MakeSpy(player);
+							});
 						}
 					}
 				});
@@ -53,11 +59,14 @@ namespace CISpy
 
 		public void OnEscaping(EscapingEventArgs ev)
 		{
-			if (ev.Player.Role == RoleType.ClassD && ev.Player.IsCuffed && spies.ContainsKey(Player.Get(ev.Player.CufferId)))
+			if (ev.Player.Role == RoleType.ClassD && ev.Player.IsCuffed && spies.ContainsKey(ev.Player.Cuffer))
 			{
 				Timing.CallDelayed(0.1f, () =>
 				{
-					MakeSpy(ev.Player);
+					Timing.CallDelayed(0.8f, () =>
+					{
+						MakeSpy(ev.Player);
+					});
 					RoundSummary.escaped_scientists--;
 					RoundSummary.escaped_ds++;
 				});
@@ -100,7 +109,10 @@ namespace CISpy
 		{
 			if (ffPlayers.Contains(ev.Attacker))
 			{
-				RemoveFF(ev.Attacker);
+				Timing.CallDelayed(0.1f, () =>
+				{
+					RemoveFF(ev.Attacker);
+				});
 			}
 
 			Player scp035 = null;
@@ -125,11 +137,11 @@ namespace CISpy
 				{
 					isDisplayFriendly = false;
 				});
-				ev.Amount = 0;
+				ev.IsAllowed = false;
 			}
 			else if (!spies.ContainsKey(ev.Target) && spies.ContainsKey(ev.Attacker) && (ev.Target.Team == Team.CHI || ev.Target.Team == Team.CDP) && ev.Target.Id != scp035?.Id)
 			{
-				ev.Amount = 0;
+				ev.IsAllowed = false;
 			}
 			/*else if (spies.ContainsKey(ev.Attacker) && spies.ContainsKey(ev.Player))
 			{
@@ -148,8 +160,7 @@ namespace CISpy
 
 		public void OnShoot(ShootingEventArgs ev)
 		{
-			if (ev.Target == null) return;
-			Player target = Player.Get(ev.Target);
+			Player target = Player.Get(ev.TargetNetId);
 			if (target == null) return;
 
 			Player scp035 = null;

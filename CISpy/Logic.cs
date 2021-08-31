@@ -1,7 +1,6 @@
-﻿using Exiled.API.Enums;
-using Exiled.API.Features;
+﻿using Exiled.API.Features;
+using Exiled.Loader;
 using MEC;
-using scp035.API;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,56 +8,63 @@ using UnityEngine;
 
 namespace CISpy
 {
+	using Exiled.API.Enums;
+	using System.Reflection;
+
 	partial class EventHandlers
 	{
 		internal static void MakeSpy(Player player, bool isVulnerable = false, bool full = true)
 		{
-			if (!CISpy.instance.Config.SpawnWithGrenade && full)
+			try
 			{
-				for (int i = player.Inventory.items.Count - 1; i >= 0; i--)
+				if (!CISpy.instance.Config.SpawnWithGrenade && full)
 				{
-					if (player.Inventory.items[i].id == ItemType.GrenadeFrag)
+					for (int i = player.Items.Count - 1; i >= 0; i--)
 					{
-						player.Inventory.items.RemoveAt(i);
+						if (player.Items.ElementAt(i).Type == ItemType.GrenadeHE)
+						{
+							player.RemoveItem(player.Items.ElementAt(i));
+						}
 					}
 				}
+				player.AddItem(ItemType.KeycardChaosInsurgency);
+				spies.Add(player, isVulnerable);
+				player.Broadcast(10, "<i><size=60>You are a <b><color=\"green\">CISpy</color></b></size>\nCheck your console by pressing [`] or [~] for more info.</i>");
+				player.ReferenceHub.characterClassManager.TargetConsolePrint(player.ReferenceHub.scp079PlayerScript.connectionToClient, "You are a Chaos Insurgency Spy! You are immune to MTF for now, but as soon as you damage an MTF, your spy immunity will turn off.\n\nHelp Chaos win the round and kill as many MTF and Scientists as you can.", "yellow");
+			} catch(Exception e)
+			{
+				Log.Error(e);
 			}
-			player.Inventory.AddNewItem(ItemType.KeycardChaosInsurgency);
-			spies.Add(player, isVulnerable);
-			player.Broadcast(10, "<i><size=60>You are a <b><color=\"green\">CISpy</color></b></size>\nCheck your console by pressing [`] or [~] for more info.</i>");
-			player.ReferenceHub.characterClassManager.TargetConsolePrint(player.ReferenceHub.scp079PlayerScript.connectionToClient, "You are a Chaos Insurgency Spy! You are immune to MTF for now, but as soon as you damage an MTF, your spy immunity will turn off.\n\nHelp Chaos win the round and kill as many MTF and Scientists as you can.", "yellow");
 		}
 
 		private Player TryGet035()
 		{
-			return Scp035Data.GetScp035();
+			Player scp035 = null;
+			if (CISpy.isScp035)
+				scp035 = (Player)Loader.Plugins.First(pl => pl.Name == "scp035").Assembly.GetType("scp035.API.Scp035Data").GetMethod("GetScp035", BindingFlags.Public | BindingFlags.Static).Invoke(null, null);
+			return scp035;
 		}
 
 		private void RevealSpies()
 		{
 			foreach (KeyValuePair<Player, bool> spy in spies)
 			{
-				Inventory.SyncListItemInfo items = new Inventory.SyncListItemInfo();
-				foreach (var item in spy.Key.Inventory.items) items.Add(item);
-				Vector3 pos = spy.Key.Position;
-				Vector3 rot = spy.Key.Rotation;
 				int health = (int)spy.Key.Health;
-				uint ammo1 = spy.Key.Ammo[(int)AmmoType.Nato556];
-				uint ammo2 = spy.Key.Ammo[(int)AmmoType.Nato762];
-				uint ammo3 = spy.Key.Ammo[(int)AmmoType.Nato9];
-
-				spy.Key.SetRole(RoleType.ChaosInsurgency);
-
-				Timing.CallDelayed(0.3f, () =>
+				Dictionary<global::ItemType, ushort> ammo = new Dictionary<global::ItemType, ushort>();
+				foreach(global::ItemType ammoType in spy.Key.Ammo.Keys)
 				{
-					spy.Key.Position = pos;
-					spy.Key.Rotation = rot;
-					spy.Key.Inventory.items.Clear();
-					foreach (var item in items) spy.Key.Inventory.AddNewItem(item.id);
+					ammo.Add(ammoType, spy.Key.Ammo[ammoType]);
+				}
+
+				spy.Key.SetRole(RoleType.ChaosConscript, SpawnReason.ForceClass, true);
+
+				Timing.CallDelayed(0.5f, () =>
+				{
 					spy.Key.Health = health;
-					spy.Key.Ammo[(int)AmmoType.Nato556] = ammo1;
-					spy.Key.Ammo[(int)AmmoType.Nato762] = ammo2;
-					spy.Key.Ammo[(int)AmmoType.Nato9] = ammo3;
+					foreach (global::ItemType ammoType in ammo.Keys)
+					{
+						spy.Key.Ammo[ammoType] = ammo[ammoType];
+					}
 				});
 
 				spy.Key.Broadcast(10, "<i>Your fellow <color=\"green\">Chaos Insurgency</color> have died.\nYou have been revealed!</i>");
