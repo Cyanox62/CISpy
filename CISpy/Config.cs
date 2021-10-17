@@ -7,7 +7,7 @@ namespace CISpy
 	{
 		public bool IsEnabled { get; set; } = true;
 
-		public List<int> SpyRoles { get; set; } = new List<int>() { 11, 13 };
+		public List<RoleType> SpyRoles { get; set; } = new List<RoleType>() { RoleType.NtfPrivate, RoleType.NtfSergeant };
 
 		public bool SpawnWithGrenade { get; set; } = true;
 

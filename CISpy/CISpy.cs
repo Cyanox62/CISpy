@@ -33,7 +33,6 @@ namespace CISpy
 		public override void OnDisabled() 
 		{
 			base.OnDisabled();
-
 			Exiled.Events.Handlers.Server.RoundStarted -= ev.OnRoundStart;
 			Exiled.Events.Handlers.Server.RespawningTeam -= ev.OnTeamRespawn;
 			Exiled.Events.Handlers.Player.ChangingRole -= ev.OnSetClass;
